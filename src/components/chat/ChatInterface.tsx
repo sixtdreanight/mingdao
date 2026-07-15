@@ -7,13 +7,11 @@ import { ProfileCard } from './ProfileCard';
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant',
-  content: `嗨！我是 Career Maze 的决策教练 👋
+  content: `嗨，我是 Career Maze 的决策教练 👋
 
-我的职责不是告诉你该走哪条路，而是帮你**学会怎么判断一条路适不适合自己**——看清每条路的代价与回报，理解取舍背后的逻辑。
+我的职责不是给你答案，而是帮你**学会判断**一条路适不适合自己。
 
-这样下次你遇到选择时，不需要我也能自己分析。
-
-我们从最简单的开始：
+我们先从最简单的开始：
 
 **你现在大几？学什么专业？**`,
   timestamp: new Date().toISOString(),
@@ -61,31 +59,23 @@ export function ChatInterface() {
           sources: json.data.sources,
           timestamp: new Date().toISOString(),
         };
-
         setMessages((prev) => [...prev, aiMsg]);
-
         if (json.data.profile) {
           setProfile((prev) => mergeProfile(prev, json.data.profile));
         }
       } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: '抱歉，我现在暂时无法回答。请稍后再试。',
-            timestamp: new Date().toISOString(),
-          },
-        ]);
+        setMessages((prev) => [...prev, {
+          role: 'assistant',
+          content: '抱歉，我现在暂时无法回答。请稍后再试。',
+          timestamp: new Date().toISOString(),
+        }]);
       }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: '网络似乎不太稳定，请检查连接后重试。',
-          timestamp: new Date().toISOString(),
-        },
-      ]);
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        content: '网络似乎不太稳定，请检查连接后重试。',
+        timestamp: new Date().toISOString(),
+      }]);
     } finally {
       setLoading(false);
     }
@@ -99,9 +89,9 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-3.5rem)] max-w-2xl flex-col bg-paper">
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+    <div className="flex h-full flex-col">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-5 py-6">
         {messages.length > 1 && (
           <div className="mb-6">
             <ProfileCard profile={profile} />
@@ -112,14 +102,17 @@ export function ChatInterface() {
         ))}
         {loading && (
           <div className="mb-5 flex justify-start">
-            <div className="rounded-r-2xl rounded-bl-md border-l-[3px] border-amber/50 bg-white px-4 py-3 shadow-sm">
-              <p className="mb-2 text-xs font-medium tracking-wide text-amber/70">
-                教练
-              </p>
-              <div className="flex items-center gap-1.5">
-                <div className="h-2 w-2 animate-bounce rounded-full bg-amber/60" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-amber/60 [animation-delay:0.12s]" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-amber/60 [animation-delay:0.24s]" />
+            <div className="max-w-[82%]">
+              <div className="mb-1 flex items-center gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-brass/60">教练</span>
+                <span className="h-px flex-1 bg-paper-line" />
+              </div>
+              <div className="rounded-r-xl rounded-bl-md border-l-[3px] border-brass/40 bg-white px-4 py-3 shadow-card">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 animate-bounce rounded-full bg-brass/50" />
+                  <div className="h-2 w-2 animate-bounce rounded-full bg-brass/50 [animation-delay:0.12s]" />
+                  <div className="h-2 w-2 animate-bounce rounded-full bg-brass/50 [animation-delay:0.24s]" />
+                </div>
               </div>
             </div>
           </div>
@@ -127,8 +120,8 @@ export function ChatInterface() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input area — grounded, warm */}
-      <div className="border-t border-amber-light/40 bg-white/70 px-4 py-3 backdrop-blur-sm sm:px-6">
+      {/* Input */}
+      <div className="shrink-0 border-t border-paper-line bg-white/60 px-5 py-3 backdrop-blur-sm">
         <div className="flex items-end gap-2">
           <textarea
             value={input}
@@ -136,40 +129,34 @@ export function ChatInterface() {
             onKeyDown={handleKeyDown}
             placeholder="输入你的回答..."
             rows={2}
-            className="flex-1 resize-none rounded-xl border border-amber-light/60 bg-white px-4 py-2.5 text-sm text-ink placeholder-ink-faint transition-colors focus:border-amber focus:outline-none focus:ring-1 focus:ring-amber/30"
+            className="flex-1 resize-none rounded-xl border border-paper-line bg-white px-4 py-2.5 text-sm text-ink placeholder-ink-faint transition-colors focus:border-brass focus:outline-none focus:ring-1 focus:ring-brass/20"
             disabled={loading}
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="rounded-xl bg-amber px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-amber-deep disabled:cursor-not-allowed disabled:opacity-30"
+            className="rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper-warm transition-all hover:bg-walnut-light disabled:cursor-not-allowed disabled:opacity-20"
           >
             发送
           </button>
         </div>
-        <p className="mt-2 text-center text-xs text-ink-faint">
-          AI 是决策教练，教你怎么判断，不替你做决定
+        <p className="mt-1.5 text-center text-[11px] text-ink-faint">
+          决策教练 · 教你怎么判断，不替你做决定
         </p>
       </div>
     </div>
   );
 }
 
-function mergeProfile(
-  old: Partial<UserProfile>,
-  incoming: Partial<UserProfile>
-): Partial<UserProfile> {
+function mergeProfile(old: Partial<UserProfile>, incoming: Partial<UserProfile>): Partial<UserProfile> {
   const merged = { ...old };
-
   for (const key of Object.keys(incoming) as (keyof UserProfile)[]) {
     const newVal = incoming[key];
     if (newVal === undefined || newVal === null) continue;
-
     if (Array.isArray(newVal) && Array.isArray(merged[key])) {
       const existing = merged[key] as string[];
-      const incomingArr = newVal as string[];
       const combined = [...existing];
-      for (const item of incomingArr) {
+      for (const item of newVal as string[]) {
         if (!combined.includes(item)) combined.push(item);
       }
       (merged as Record<string, unknown>)[key] = combined;
@@ -179,6 +166,5 @@ function mergeProfile(
       (merged as Record<string, unknown>)[key] = newVal;
     }
   }
-
   return merged;
 }

@@ -5,25 +5,31 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Warm Paper & Ink palette
+        // Scholar's Desk palette
+        walnut: {
+          DEFAULT: '#2C2416',   // desk surface — deep brown-black
+          light: '#3D3224',     // slightly lighter
+          surface: '#4A3F2F',   // hover/interactive states
+        },
         paper: {
-          DEFAULT: '#F9F6F0',   // page background — warm, not cold white
-          hover: '#F3EFE7',     // subtle hover state
+          DEFAULT: '#F5F0E8',   // page background — warm stone
+          warm: '#FBF8F3',      // card bg — slightly warmer white
+          line: '#E8E0D5',      // subtle dividers
+        },
+        brass: {
+          light: '#F5E6D0',     // accent bg
+          DEFAULT: '#C17F3E',   // accent — warm lamp glow
+          deep: '#8B5E2F',      // hover/active
         },
         ink: {
-          DEFAULT: '#1C1917',   // primary text — warm charcoal
-          muted: '#78716C',     // secondary text — pencil gray
-          faint: '#A8A29E',     // tertiary text — barely there
-        },
-        amber: {
-          light: '#FEF3C7',     // accent background
-          DEFAULT: '#B7611E',   // accent — desk lamp glow
-          deep: '#92400E',      // accent hover/active
+          DEFAULT: '#1A1512',   // primary text — warm black
+          muted: '#6B6258',     // secondary — warm gray
+          faint: '#A09888',     // tertiary
         },
         sage: {
-          light: '#ECF4EE',     // trust background
-          DEFAULT: '#3B6B4F',   // trust/positive — calm green
-          deep: '#2D5A3E',      // trust hover
+          light: '#EDF2EC',
+          DEFAULT: '#4A6741',   // trust/positive — calm green
+          deep: '#3A5233',
         },
       },
       fontFamily: {
@@ -34,6 +40,11 @@ const config: Config = {
           'sans-serif',
         ],
         mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+      },
+      boxShadow: {
+        card: '0 1px 3px rgba(44, 36, 22, 0.06), 0 1px 2px rgba(44, 36, 22, 0.04)',
+        'card-hover': '0 4px 12px rgba(44, 36, 22, 0.08)',
+        panel: '-2px 0 12px rgba(44, 36, 22, 0.06)',
       },
     },
   },

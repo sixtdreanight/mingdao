@@ -3,57 +3,35 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --trust-official: #3B6B4F;
-    --trust-ai: #B7611E;
-    --trust-community: #B45309;
-  }
-
   html {
-    background-color: #F9F6F0;
+    background-color: #F5F0E8;
   }
 
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #F9F6F0;
-    color: #1C1917;
+    background-color: #F5F0E8;
+    color: #1A1512;
   }
 
-  /* Focus ring — warm amber, not default blue */
   *:focus-visible {
-    outline: 2px solid #B7611E;
+    outline: 2px solid #C17F3E;
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 3px;
   }
 }
 
 @layer components {
-  /* Trust badges */
   .trust-badge-official {
     @apply inline-flex items-center gap-1 rounded-full border border-sage-light
            bg-sage-light px-2 py-0.5 text-xs font-medium text-sage-deep;
   }
   .trust-badge-ai {
-    @apply inline-flex items-center gap-1 rounded-full border border-amber-light
-           bg-amber-light px-2 py-0.5 text-xs font-medium text-amber-deep;
+    @apply inline-flex items-center gap-1 rounded-full border border-brass-light
+           bg-brass-light px-2 py-0.5 text-xs font-medium text-brass-deep;
   }
   .trust-badge-community {
     @apply inline-flex items-center gap-1 rounded-full border border-red-100
            bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700;
-  }
-
-  /* Trend indicators */
-  .trend-rising {
-    @apply inline-flex items-center gap-1 text-sage font-medium;
-  }
-  .trend-stable {
-    @apply inline-flex items-center gap-1 text-ink-muted font-medium;
-  }
-  .trend-declining {
-    @apply inline-flex items-center gap-1 text-amber font-medium;
-  }
-  .trend-risk {
-    @apply inline-flex items-center gap-1 text-red-600 font-medium;
   }
 }

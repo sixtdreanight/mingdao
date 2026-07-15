@@ -3,30 +3,33 @@ import { ResourcePanel } from '@/components/chat/ResourcePanel';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col bg-paper">
-      {/* Minimal header */}
-      <header className="relative z-20 border-b border-amber-light/50 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-6xl items-center px-4 sm:px-6">
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold tracking-tight text-ink">
+    <main className="flex h-screen flex-col overflow-hidden bg-paper">
+      {/* Header — dark walnut, anchors the "desk" metaphor */}
+      <header className="shrink-0 border-b border-walnut-light/30 bg-walnut px-5 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-3">
+            <span className="text-lg font-bold tracking-tight text-paper-warm">
               Career Maze
             </span>
-            <span className="hidden text-xs text-ink-faint sm:inline">
-              学会做自己的职业决策
+            <span className="hidden text-xs text-walnut-surface text-paper-line sm:inline">
+              决策教练
             </span>
           </div>
+          <p className="text-xs text-paper-line/50">
+            教你怎么判断，不替你做决定
+          </p>
         </div>
       </header>
 
-      {/* Split layout: Chat | Resource Panel */}
-      <div className="flex flex-1">
-        {/* Chat area */}
-        <div className="flex-1">
+      {/* Body: Chat + Resource sidebar */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Chat — the coaching space */}
+        <div className="flex flex-1 flex-col overflow-hidden bg-paper">
           <ChatInterface />
         </div>
 
-        {/* Resource panel — always visible on desktop, togglable on mobile */}
-        <div className="hidden lg:block lg:w-80 lg:shrink-0">
+        {/* Resources — walnut sidebar, cards not list */}
+        <div className="hidden w-[340px] shrink-0 border-l border-walnut-light/20 bg-paper-warm lg:block">
           <ResourcePanel />
         </div>
       </div>
