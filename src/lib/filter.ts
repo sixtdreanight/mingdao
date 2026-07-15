@@ -1,4 +1,4 @@
-import type { CareerPath, HardConstraint, UserProfile } from '@/types';
+import type { CareerPath, HardConstraint } from '@/types';
 
 // 硬约束筛选顺序（可配置，社区可扩展）
 export const CONSTRAINT_ORDER: string[] = [
