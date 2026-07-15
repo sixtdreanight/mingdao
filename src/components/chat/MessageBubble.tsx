@@ -1,5 +1,4 @@
 import type { ChatMessage } from '@/types';
-import { PathCard } from './PathCard';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -27,10 +26,23 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           dangerouslySetInnerHTML={{ __html: formattedContent }}
         />
 
-        {message.paths && message.paths.length > 0 && (
-          <div className="mt-3 space-y-2">
-            {message.paths.map((path) => (
-              <PathCard key={path.slug} path={path} compact />
+        {message.sources && message.sources.length > 0 && (
+          <div className="mt-3 border-t border-gray-100 pt-2">
+            <p className="mb-1 text-xs text-gray-400">参考数据来源：</p>
+            {message.sources.map((atom) => (
+              <div key={atom.id} className="text-xs text-gray-500">
+                · {atom.title}
+                {atom.sourceUrl && (
+                  <a
+                    href={atom.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-1 text-brand-500 hover:underline"
+                  >
+                    [来源]
+                  </a>
+                )}
+              </div>
             ))}
           </div>
         )}

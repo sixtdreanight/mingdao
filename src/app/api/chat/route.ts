@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { ChatMessage, ApiResponse, UserProfile } from '@/types';
+import type { ChatMessage, ApiResponse, UserProfile, KnowledgeAtom } from '@/types';
 import { chatWithAI } from '@/lib/ai';
 import { extractProfile } from '@/lib/profile-extractor';
 
 export async function POST(
   request: NextRequest
-): Promise<NextResponse<ApiResponse<{ reply: string; profile: Partial<UserProfile> }>>> {
+): Promise<
+  NextResponse<
+    ApiResponse<{ reply: string; profile: Partial<UserProfile>; sources: KnowledgeAtom[] }>
+  >
+> {
   try {
     const body = await request.json();
     const messages: ChatMessage[] = body.messages;
@@ -17,15 +21,12 @@ export async function POST(
       );
     }
 
-    // 从对话中提取用户画像
     const profile = extractProfile(messages);
-
-    // RAG + AI 生成回复（传入画像用于个性化）
-    const reply = await chatWithAI(messages, profile);
+    const { reply, sources } = await chatWithAI(messages, profile);
 
     return NextResponse.json({
       success: true,
-      data: { reply, profile },
+      data: { reply, profile, sources: sources || [] },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'AI 服务暂时不可用';
