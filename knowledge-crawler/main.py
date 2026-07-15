@@ -47,6 +47,7 @@ from extract import extract_atom
 from validate import validate_atom
 from output import write_atom_file
 from query_builder import UserContext, build_search_queries
+from query_expander import build_expanded_queries, ExpandedQuery
 
 
 def main(argv: list[str] | None = None):
@@ -74,23 +75,97 @@ def main(argv: list[str] | None = None):
         print(f"   兴趣: {ctx.interests or '未知'}")
         print(f"   层次: {ctx.university_tier or '未知'}")
 
-        dynamic_queries = build_search_queries(ctx, args.category and [args.category])
-        # 转为 sources 格式
+        # 扩展查询维度
+        expanded = build_expanded_queries(
+            user_city=ctx.target_city,
+            user_major=ctx.major,
+            user_budget=ctx.budget,
+        )
+        print(f"\n  扩展结果:")
+        for dim, queries in expanded.items():
+            exact = [q for q in queries if q.priority == "exact"]
+            ext = [q for q in queries if q.priority == "extended"]
+            print(f"    [{dim}] 精确: {[e.query for e in exact]}")
+            if ext:
+                print(f"    [{dim}] 扩展: {[e.query for e in ext]} ({ext[0].reason})")
+
+        # 用扩展后的城市/专业生成搜索词
+        # 策略：精确匹配的每个组合都搜，扩展匹配的只搜核心维度
+        exact_cities = [q.query for q in expanded.get("city", []) if q.priority == "exact"]
+        extended_cities = [q.query for q in expanded.get("city", []) if q.priority == "extended"]
+        exact_majors = [q.query for q in expanded.get("major", []) if q.priority == "exact"]
+        extended_majors = [q.query for q in expanded.get("major", []) if q.priority == "extended"]
+
+        # 构建搜索词：精确城市 × 精确专业（全维度）
+        primary_ctx = UserContext(
+            major=exact_majors[0] if exact_majors else ctx.major,
+            grade=ctx.grade,
+            university_tier=ctx.university_tier,
+            target_city=exact_cities[0] if exact_cities else ctx.target_city,
+            budget=ctx.budget,
+            interests=ctx.interests,
+            lifestyle=ctx.lifestyle,
+            red_lines=ctx.red_lines,
+        )
+        primary_queries = build_search_queries(primary_ctx, args.category and [args.category])
+
+        # 构建搜索词：扩展城市 × 精确专业（salary + employment）
+        extended_queries: dict[str, list[str]] = {}
+        for ext_city in extended_cities:
+            ext_ctx = UserContext(
+                major=exact_majors[0] if exact_majors else ctx.major,
+                target_city=ext_city,
+                budget=ctx.budget,
+            )
+            ext_qs = build_search_queries(ext_ctx, ["salary", "employment"])
+            for cat, qs in ext_qs.items():
+                if cat not in extended_queries:
+                    extended_queries[cat] = []
+                # 标记为扩展参考
+                extended_queries[cat].extend(qs)
+
+        # 构建搜索词：精确城市 × 扩展专业（salary + trend）
+        for ext_major in extended_majors:
+            ext_ctx = UserContext(
+                major=ext_major,
+                target_city=exact_cities[0] if exact_cities else ctx.target_city,
+            )
+            ext_qs = build_search_queries(ext_ctx, ["salary", "trend"])
+            for cat, qs in ext_qs.items():
+                if cat not in extended_queries:
+                    extended_queries[cat] = []
+                extended_queries[cat].extend(qs)
+
+        # 合并：精确查询 + 扩展查询
+        all_queries: dict[str, list[tuple[str, str]]] = {}  # cat → [(query, priority)]
+        for cat, qs in primary_queries.items():
+            all_queries.setdefault(cat, []).extend((q, "exact") for q in qs)
+        for cat, qs in extended_queries.items():
+            all_queries.setdefault(cat, []).extend((q, "extended") for q in qs)
+
+        # 转为 sources 格式（去重）
         sources = [
-            {"category": cat, "search_queries": qs}
-            for cat, qs in dynamic_queries.items() if qs
+            {"category": cat, "search_queries": list(dict.fromkeys(q for q, _ in qs))}
+            for cat, qs in all_queries.items() if qs
         ]
+
+        print(f"\n  搜索计划:")
+        for src in sources:
+            exact_count = sum(1 for q, p in all_queries.get(src["category"], []) if p == "exact")
+            ext_count = len(src["search_queries"]) - exact_count
+            print(f"    [{src['category']}] {exact_count} 精确 + {ext_count} 扩展")
+            for q in src["search_queries"][:3]:
+                tag = "🎯" if any(q == q2 and p == "exact" for q2, p in all_queries.get(src["category"], [])) else "📎"
+                print(f"      {tag} {q[:60]}")
+            if len(src["search_queries"]) > 3:
+                print(f"      ... 还有 {len(src['search_queries']) - 3} 个")
+
         if args.category:
             authoritative = [
                 s for s in AUTHORITATIVE_SOURCES if s.category == args.category
             ]
         else:
             authoritative = AUTHORITATIVE_SOURCES
-
-        for src in sources:
-            print(f"\n  [{src['category']}] {len(src['search_queries'])} 个搜索词:")
-            for q in src['search_queries']:
-                print(f"    - {q}")
     else:
         # === 批量模式：使用预设搜索词 ===
         sources = ALL_SOURCES

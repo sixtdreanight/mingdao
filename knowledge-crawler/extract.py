@@ -36,8 +36,14 @@ EXTRACT_PROMPT = """你是一个职业规划数据提取专家。我会给你一
   "data": {{ ... 按 Schema 填充 }},
   "tags": ["标签1", "标签2"],
   "sourceUrl": "主要来源URL",
-  "trustLevel": "official|ai-inferred"
+  "trustLevel": "official|ai-inferred",
+  "priority": "exact|extended|reference"
 }}
+
+priority 说明：
+- "exact": 这是用户首选城市/专业/预算的精确匹配数据，权重最高
+- "extended": 这是周边城市/相近专业的扩展数据，可作为参考选项
+- "reference": 这是更广泛的一般性参考数据
 """
 
 SCHEMA_DESCRIPTIONS = {
