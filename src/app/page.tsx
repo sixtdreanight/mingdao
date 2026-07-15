@@ -1,74 +1,59 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState } from 'react';
+import { MessageSquare, Library, Compass } from 'lucide-react';
 import { ChatInterface } from '@/components/chat/ChatInterface';
-import { ResourcePanel } from '@/components/chat/ResourcePanel';
+import { ResourceBrowser } from '@/components/chat/ResourceBrowser';
 
-const MIN_PANEL = 320;
-const MAX_PANEL = 600;
-const DEFAULT_PANEL = 440;
-
-function loadWidth(): number {
-  if (typeof window === 'undefined') return DEFAULT_PANEL;
-  const saved = localStorage.getItem('career-maze-resource-width');
-  return saved ? Math.max(MIN_PANEL, Math.min(MAX_PANEL, Number(saved))) : DEFAULT_PANEL;
-}
+type View = 'chat' | 'resources';
 
 export default function Home() {
-  const [resourceWidth, setResourceWidth] = useState(DEFAULT_PANEL);
-  const [dragging, setDragging] = useState(false);
-  const dragRef = useRef(0);
-
-  useEffect(() => { setResourceWidth(loadWidth()); }, []);
-
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setDragging(true);
-    dragRef.current = e.clientX;
-  }, []);
-
-  useEffect(() => {
-    if (!dragging) return;
-    const onMove = (e: MouseEvent) => {
-      const delta = dragRef.current - e.clientX;
-      setResourceWidth((w) => Math.max(MIN_PANEL, Math.min(MAX_PANEL, w + delta)));
-      dragRef.current = e.clientX;
-    };
-    const onUp = () => {
-      setDragging(false);
-      setResourceWidth((w) => { localStorage.setItem('career-maze-resource-width', String(w)); return w; });
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-  }, [dragging]);
+  const [view, setView] = useState<View>('chat');
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border/40 bg-[#25160C] px-5 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-baseline gap-3">
-            <span className="text-lg font-bold tracking-tight text-[#FAF4EC]">Career Maze</span>
-            <span className="hidden text-xs text-white/40 sm:inline">决策教练</span>
+      {/* Top navigation */}
+      <header className="shrink-0 border-b border-border/40 bg-[#25160C]">
+        <div className="flex h-12 items-center justify-between px-5">
+          <div className="flex items-center gap-6">
+            <div className="flex items-baseline gap-2">
+              <Compass className="h-5 w-5 text-primary" />
+              <span className="text-base font-bold tracking-tight text-[#FAF4EC]">Career Maze</span>
+            </div>
+            <nav className="flex items-center gap-1">
+              <button
+                onClick={() => setView('chat')}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  view === 'chat'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-white/50 hover:text-white/80'
+                }`}
+              >
+                <MessageSquare className="h-4 w-4" />
+                对话
+              </button>
+              <button
+                onClick={() => setView('resources')}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  view === 'resources'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-white/50 hover:text-white/80'
+                }`}
+              >
+                <Library className="h-4 w-4" />
+                资源库
+              </button>
+            </nav>
           </div>
-          <p className="text-xs text-white/25">教你怎么判断，不替你做决定</p>
+          <p className="hidden text-xs text-white/25 md:block">
+            教你怎么判断，不替你做决定
+          </p>
         </div>
       </header>
 
-      {/* Body: Chat + Resizer + Resources */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-1 flex-col overflow-hidden"><ChatInterface /></div>
-        <div
-          className={`hidden shrink-0 lg:block ${dragging ? 'w-1 bg-primary/20' : 'w-[4px] bg-border/30 resize-handle'}`}
-          onMouseDown={onMouseDown}
-        />
-        <div
-          className="hidden shrink-0 overflow-hidden border-l border-border/30 bg-sidebar lg:block"
-          style={{ width: resourceWidth, transition: dragging ? 'none' : 'width 200ms ease-out' }}
-        >
-          <ResourcePanel />
-        </div>
+      {/* View content */}
+      <div className="flex-1 overflow-hidden">
+        {view === 'chat' ? <ChatInterface /> : <ResourceBrowser />}
       </div>
     </div>
   );
