@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 
 export default function Home() {
@@ -10,18 +11,18 @@ export default function Home() {
             <p className="text-xs text-gray-500">找到属于你的路</p>
           </div>
           <nav className="flex items-center gap-4 text-sm">
-            <a
+            <Link
               href="/paths"
               className="text-gray-600 transition-colors hover:text-brand-500"
             >
               路径库
-            </a>
-            <a
+            </Link>
+            <Link
               href="/compare"
               className="text-gray-600 transition-colors hover:text-brand-500"
             >
               对比
-            </a>
+            </Link>
           </nav>
         </div>
       </header>

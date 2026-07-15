@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { CareerPath } from '@/types';
 import { TrustBadge } from '@/components/ui/TrustBadge';
 import { TrendBadge } from '@/components/ui/TrendBadge';
@@ -8,7 +9,7 @@ interface PathCardProps {
   compact?: boolean;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
+const CATEGORY_LABELS: Record<CareerPath['category'], string> = {
   'domestic-employment': '直接就业',
   'domestic-postgrad': '国内升学',
   'overseas-study': '出国出境',
@@ -72,12 +73,12 @@ export function PathCard({ path, score, compact = false }: PathCardProps) {
         </>
       )}
 
-      <a
+      <Link
         href={`/paths/${path.slug}`}
         className="mt-3 inline-block text-sm font-medium text-brand-500 hover:text-brand-700"
       >
         查看详情 →
-      </a>
+      </Link>
     </div>
   );
 }
