@@ -28,8 +28,8 @@ export default function Home() {
           <ChatInterface />
         </div>
 
-        {/* Resources — walnut sidebar, cards not list */}
-        <div className="hidden w-[340px] shrink-0 border-l border-walnut-light/20 bg-paper-warm lg:block">
+        {/* Resources — wider, more usable */}
+        <div className="hidden w-[440px] shrink-0 border-l border-paper-line bg-paper-warm lg:block">
           <ResourcePanel />
         </div>
       </div>
