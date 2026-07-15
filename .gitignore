@@ -1,6 +1,37 @@
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
+
+# Environment
 .env
 .env.local
+.env.*.local
+
+# Database
 *.db
 *.db-journal
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.knowledge-crawler-cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+out/
+dist/
+
+# E2E
+e2e-screenshots/
+test-results/
+playwright-report/

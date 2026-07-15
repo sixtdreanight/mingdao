@@ -1,91 +1,86 @@
-# Career Maze — 找到属于你的路
+# Career Maze — 学会做自己的职业决策
 
-> 一个给大学生的引导式职业规划工具。不制造焦虑，不贩卖成功学，只帮你把每条路都看清楚。
+> 把每条路的代价和回报都摊开来看。看清楚了，你自己选。
 
----
-
-## 为什么要有这个项目
-
-在中国上大学，规划这件事挺难的。
-
-大一的时候你可能连自己专业能干什么都不清楚，到了大二，身边的人已经开始卷考研、卷实习、卷考公，声音越来越多，也越来越乱。你打开小红书，满屏的"双非逆袭985""XX专业已死""大学四年必须做的50件事"；你问学长学姐，听到的是经过严重筛选的幸存者故事——失败了的人不会发帖，也不会主动来讲。
-
-信息不对称 + 幸存者偏差 + 算法加持的焦虑叙事，让本该是"探索可能性"的大学四年，变成了"在噪音中赌博"。
-
-**Career Maze 想做的只有一件事：把你的选项摊开，把每条路真实的样子告诉你，然后让你自己选。**
-
-我们不做"你应该选A"这种判断，那是你的事。我们做的是"A路在你当前的约束下适配度 72%，主要风险是 X，如果选了 A 意味着你要放弃 B 和 C"——把信息给到，把决策留给你。
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+[![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-latest-orange)](https://ui.shadcn.com/)
 
 ---
 
-## 三个核心机制
+## 为什么要做这个
 
-### 1. 知识库驱动，不是瞎聊
+上大学的时候，很多人到大三才开始想"我到底要干嘛"。考研？工作？考公？出国？每条路都有人说好有人说坑，但你不知道谁说的是真的。
 
-AI 对话不会凭空编造信息。所有回答都从知识库中检索——O\*NET 职业数据、教育部公开报告、政策文件——每条数据都标注来源、可信度和更新时间。你看得到每句话是从哪来的。
+小红书和知乎上到处都是"双非逆袭985"和"XX专业已死"——但发帖的都是极端案例，沉默的大多数你根本看不到。
 
-### 2. 引导式对话，不是问答机器人
-
-不是那种"输入你的专业→返回职业列表"的工具。对话会引导你一步步理清自己的约束条件：经济可行性、语言门槛、目标城市、生活方式偏好……不是告诉你要选什么，而是帮你发现自己不能接受什么。
-
-### 3. 多维度对比，不是单一结论
-
-任何推荐都同时展示 3 条以上不同类别的路径，每条路径标注趋势（上升/稳定/下降/替代风险）、排他性（选了这条意味着你放弃了什么），以及从大一到大四的可执行阶梯计划。你可以把多条路径并排对比，看硬约束通过情况、适配度、风险、趋势。
+这个项目做的事很简单：**把每条路真实的样子摊给你看，然后你自己选。** 不替你判断，不给标准答案。
 
 ---
 
-## 核心理念
+## 核心原则
 
-| 理念 | 说明 |
+| 原则 | 含义 |
 |------|------|
-| **H-I-P（人主导规划）** | AI 只是信息检索和推理工具，所有决策由人做出。AI 不说"你应该选A"，而是说"A路适配度72%，主要风险X"。 |
-| **拒绝幸存者偏差** | 每条数据标注来源和可信度（🟢 官方公开数据 / 🟡 AI 推理数据 / 🔴 社区未审核），主动呈现失败叙事和平凡样本。 |
-| **路径不能单一** | 任何输出必须展示 3 条以上不同类别的路径，主动暴露你不知道的选项。 |
-| **永远有退路** | 每条路径标注排他性，考研失败、出国被拒的 Plan B 永远并行展示。你不被任何一条路绑架。 |
-
----
-
-## 技术栈
-
-| 层 | 技术 |
-|---|------|
-| 框架 | Next.js 14 (App Router) |
-| 语言 | TypeScript (strict mode) |
-| 样式 | Tailwind CSS 3 |
-| AI | Claude API / 通义千问 (可切换) |
-| 知识库 | Markdown 文件 + RAG 检索 |
-| 数据库 | SQLite (better-sqlite3) |
+| **H-I-P（人主导规划）** | AI 不替你做决定。它说"A路优势X风险Y，B路优势W风险Z"，不说"你应该选A" |
+| **角色卡机制** | 8 维度渐进式信息收集，信息不足 6 维度绝不推荐 |
+| **教决策框架** | 不只给结论，教你下次遇到类似问题时自己分析 |
+| **数据可追溯** | 每条 AI 引用的数据标注知识条目 ID，可点击验证来源 |
+| **反幸存者偏差** | 数据是极端个例时明确指出 |
 
 ---
 
 ## 快速开始
 
+### 环境要求
+
+- Node.js ≥ 18
+- npm ≥ 9
+
+### 安装与运行
+
 ```bash
-# 1. 克隆项目
-git clone https://github.com/your-username/career-maze.git
+# 克隆项目
+git clone https://github.com/sixtdreanight/career-maze.git
 cd career-maze
 
-# 2. 配置环境变量
-cp .env.example .env
-# 编辑 .env，填入至少一个 AI API Key（Anthropic 或 DashScope）
-
-# 3. 安装依赖
+# 安装依赖
 npm install
 
-# 4. 启动开发服务器
-npm run dev
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env，填入 ANTHROPIC_API_KEY
 
-# 5. 打开浏览器
-# http://localhost:3000
+# 启动开发服务器
+npm run dev
 ```
 
-### 环境变量说明
+打开 [http://localhost:3000](http://localhost:3000) 开始使用。
 
-| 变量 | 必填 | 说明 |
-|------|------|------|
-| `ANTHROPIC_API_KEY` | 二选一 | Claude API 密钥 |
-| `DASHSCOPE_API_KEY` | 二选一 | 通义千问 API 密钥 |
-| `NEXT_PUBLIC_APP_NAME` | 否 | 应用名称，默认 `Career Maze` |
+### 开发命令
+
+```bash
+npm run dev        # 开发模式
+npm run build      # 生产构建
+npm run start      # 生产运行
+npm run typecheck  # TypeScript 类型检查
+npm run lint       # ESLint 检查
+```
+
+---
+
+## 技术栈
+
+| 技术 | 用途 |
+|------|------|
+| [Next.js 14](https://nextjs.org/) | 全栈框架 (App Router) |
+| [TypeScript](https://www.typescriptlang.org/) | 类型安全 |
+| [shadcn/ui](https://ui.shadcn.com/) | UI 组件库 |
+| [Tailwind CSS](https://tailwindcss.com/) | 样式系统 |
+| [Claude API](https://docs.anthropic.com/) | AI 对话引擎 |
+| [lucide-react](https://lucide.dev/) | 图标库 |
+| [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | 会话存储 |
 
 ---
 
@@ -93,95 +88,90 @@ npm run dev
 
 ```
 career-maze/
-├── docs/                           # 设计文档
-│   ├── superpowers/
-│   │   ├── specs/                  # 产品设计文档
-│   │   └── plans/                  # MVP 实施计划
-│   └── design-process/             # 设计推导过程
-├── public/                         # 静态资源
 ├── src/
-│   ├── app/                        # Next.js App Router 页面
-│   │   ├── page.tsx                # 首页（对话入口）
-│   │   ├── layout.tsx              # 全局布局
-│   │   ├── globals.css             # 全局样式
-│   │   ├── paths/                  # 路径浏览与详情页
-│   │   │   ├── page.tsx            # 路径库列表
-│   │   │   └── [slug]/page.tsx     # 单条路径详情
-│   │   ├── compare/                # 路径对比页
-│   │   │   └── page.tsx
-│   │   └── api/chat/route.ts       # AI 对话 API
+│   ├── app/                  # Next.js App Router
+│   │   ├── api/chat/         # AI 对话 API
+│   │   ├── layout.tsx        # 根布局
+│   │   ├── page.tsx          # 首页（顶栏切换）
+│   │   └── globals.css       # 全局样式 + shadcn 主题
 │   ├── components/
-│   │   ├── chat/                   # 对话相关组件
-│   │   │   ├── ChatInterface.tsx   # 对话主界面
-│   │   │   ├── MessageBubble.tsx   # 消息气泡
-│   │   │   └── PathCard.tsx        # 路径推荐卡片
-│   │   ├── paths/                  # 路径相关组件
-│   │   │   ├── PathExplorer.tsx    # 路径探索器
-│   │   │   ├── PathDetail.tsx      # 路径详情面板
-│   │   │   ├── ConstraintFilter.tsx # 硬约束筛选器
-│   │   │   └── ConstraintList.tsx  # 约束列表
-│   │   ├── compare/                # 对比组件
-│   │   │   └── PathComparator.tsx  # 路径对比器
-│   │   └── ui/                     # 通用 UI 组件
-│   │       ├── TrustBadge.tsx      # 可信度徽章
-│   │       └── TrendBadge.tsx      # 趋势标签
-│   ├── data/paths/                 # 知识库 — 路径数据
-│   │   ├── index.ts                # 路径注册表
-│   │   ├── cs-domestic-employment.md
-│   │   ├── cs-germany-masters.md
-│   │   └── ...（30 条核心路径）
-│   ├── lib/                        # 核心库
-│   │   ├── knowledge-base.ts       # 知识库加载器
-│   │   ├── filter.ts               # 硬约束筛选引擎
-│   │   ├── score.ts                # 偏好评分引擎
-│   │   ├── rag.ts                  # RAG 检索引擎
-│   │   └── ai.ts                   # AI 客户端（Claude/千问）
-│   └── types/                      # TypeScript 类型定义
-│       ├── index.ts                # 核心类型
-│       └── md.d.ts                 # Markdown 模块声明
-├── .env.example                    # 环境变量模板
-├── next.config.js
-├── tailwind.config.ts
-├── tsconfig.json
-└── package.json
+│   │   ├── chat/             # 聊天组件
+│   │   │   ├── ChatInterface.tsx    # 聊天主界面
+│   │   │   ├── MessageBubble.tsx    # 消息气泡
+│   │   │   ├── ProfileCard.tsx      # 角色卡
+│   │   │   └── ResourceBrowser.tsx  # 资源浏览器
+│   │   └── ui/               # shadcn UI 组件
+│   ├── data/
+│   │   ├── resources.ts      # 资源索引（310+ 策展链接）
+│   │   └── knowledge/        # 原子知识库（7 维度）
+│   ├── lib/
+│   │   ├── ai.ts             # AI 客户端
+│   │   ├── rag.ts            # RAG 检索引擎
+│   │   └── profile-extractor.ts  # 用户画像提取
+│   └── types/
+│       └── index.ts          # TypeScript 类型定义
+├── knowledge-crawler/        # 知识库爬虫（Python）
+├── docs/                     # 设计文档
+├── .github/                  # GitHub Issue/PR 模板
+├── README.md
+├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
+├── SECURITY.md
+├── CHANGELOG.md
+└── LICENSE
 ```
 
 ---
 
-## 如何参与
+## 资源索引
 
-这个项目还处于早期阶段，欢迎任何形式的参与：
+内置 **310+ 策展链接**，覆盖：
+- 13 个教育部学科门类
+- 84 项教育部白名单竞赛
+- 45 个行业垂直招聘平台
+- 科研暑研/学术会议/论文发表
+- GitHub Awesome 系列（30+ 仓库）
 
-### 新增路径
+**设计原则：不搬运数据，只索引「去哪找」。**
 
-知识库目前以计算机专业为主，你可以贡献其他专业方向（金融、医学、法学、建筑等）的路径。参考 `src/data/paths/` 下的现有文件作为模板。
+---
 
-### 完善数据
+## 知识库爬虫
 
-发现数据过时、不准确，或者某条路径的某个约束评估不合适？提 Issue 或直接改 PR。
+```bash
+cd knowledge-crawler
+pip install -r requirements.txt
+export DEEPSEEK_API_KEY=sk-...
 
-### 代码贡献
+# 根据用户画像动态搜索
+python main.py --profile '{"major":"金融学","targetCity":"上海","budget":200000}'
 
-Fork → 创建分支 → 提交 PR。详情见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+# 批量预置搜索
+python main.py
+```
 
-### 反馈与讨论
+---
 
-最直接的方式：用这个工具做一次你自己的规划，把过程中任何让你觉得"不对""不够好""缺了什么"的地方告诉我们。Issue 区随时开放。
+## 贡献
+
+欢迎贡献！详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+
+贡献方式：
+- 新增/修正资源链接
+- 完善知识库原子数据
+- 改进 AI 提示词
+- 报告 Bug 或提出功能请求
 
 ---
 
 ## 设计文档
 
-项目有完整的设计推导和产品文档：
-
-- [产品设计文档](docs/superpowers/specs/2026-07-16-college-career-maze-design.md) — 问题定义、核心理念、架构设计、决策引擎设计
-- [MVP 实施计划](docs/superpowers/plans/2026-07-16-college-career-maze-mvp.md) — 开发阶段、里程碑、技术选型
-- [设计推导过程](docs/design-process/design-derivation.md) — 从问题到方案的完整推导记录
+- [产品设计文档](docs/superpowers/specs/2026-07-16-college-career-maze-design.md)
+- [知识库设计文档](docs/superpowers/specs/2026-07-16-knowledge-base-redesign.md)
+- [MVP 实现计划](docs/superpowers/plans/2026-07-16-college-career-maze-mvp.md)
 
 ---
 
-## 许可
+## License
 
-MIT License — 详见 [LICENSE](./LICENSE)。
-
-简单说：随便用、随便改、随便分发，保留版权声明就行。
+[MIT](./LICENSE)

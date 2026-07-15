@@ -6,7 +6,7 @@ import { ProfileCard } from './ProfileCard';
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant', timestamp: new Date().toISOString(),
-  content: `嗨，我是 Career Maze 的决策教练 👋\n\n我的职责不是给你答案，而是帮你**学会判断**一条路适不适合自己。\n\n我们从最简单的开始：\n\n**你现在大几？学什么专业？**`,
+  content: `嗨，我是 Career Maze 的决策助手 👋\n\n我的职责不是给你答案，而是帮你**学会判断**一条路适不适合自己。\n\n我们从最简单的开始：\n\n**你现在大几？学什么专业？**`,
 };
 
 export function ChatInterface() {
@@ -41,7 +41,7 @@ export function ChatInterface() {
         {messages.length > 1 && <div className="mb-6"><ProfileCard profile={profile} /></div>}
         {messages.map((msg, i) => (<MessageBubble key={i} message={msg} />))}
         {loading && <div className="mb-5 flex justify-start">
-          <div className="max-w-[82%]"><div className="mb-1 flex items-center gap-2"><span className="text-xs font-medium uppercase tracking-wider text-primary/60">教练</span><span className="h-px flex-1 bg-border" /></div>
+          <div className="max-w-[82%]"><div className="mb-1 flex items-center gap-2"><span className="text-xs font-medium uppercase tracking-wider text-primary/60">助手</span><span className="h-px flex-1 bg-border" /></div>
           <div className="rounded-r-xl rounded-bl-md border-l-[3px] border-primary/40 bg-card px-4 py-3 shadow-sm">
             <div className="flex items-center gap-1.5"><div className="h-2 w-2 animate-bounce rounded-full bg-primary/50" /><div className="h-2 w-2 animate-bounce rounded-full bg-primary/50 [animation-delay:0.12s]" /><div className="h-2 w-2 animate-bounce rounded-full bg-primary/50 [animation-delay:0.24s]" /></div></div></div></div>}
         <div ref={chatEndRef} />
@@ -53,7 +53,7 @@ export function ChatInterface() {
           <button onClick={handleSend} disabled={loading || !input.trim()}
             className="rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-20">发送</button>
         </div>
-        <p className="mt-1.5 text-center text-[11px] text-muted-foreground">决策教练 · 教你怎么判断，不替你做决定</p>
+        <p className="mt-1.5 text-center text-[11px] text-muted-foreground">把路看清楚，决定你自己做</p>
       </div>
     </div>
   );

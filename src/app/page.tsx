@@ -46,7 +46,7 @@ export default function Home() {
             </nav>
           </div>
           <p className="hidden text-xs text-white/25 md:block">
-            教你怎么判断，不替你做决定
+            把路看清楚，决定你自己做
           </p>
         </div>
       </header>

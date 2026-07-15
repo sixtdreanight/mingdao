@@ -1,6 +1,25 @@
 {
   "name": "career-maze",
   "version": "0.1.0",
+  "description": "把每条路的真实代价摊开来看，决定你自己做",
+  "keywords": [
+    "career-planning",
+    "education",
+    "college-students",
+    "nextjs",
+    "rag",
+    "chatbot"
+  ],
+  "homepage": "https://github.com/sixtdreanight/career-maze",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sixtdreanight/career-maze.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sixtdreanight/career-maze/issues"
+  },
+  "author": "梦夜十六 <sixtdreanight@gmail.com>",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
