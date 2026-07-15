@@ -3,23 +3,22 @@
 借鉴 weekly-hotspot 架构，增强为四层管道：
 
 Phase 0: 数据获取（双通道并行）
-  - Channel A: 搜索引擎 (DDG + Bing) → 搜索关键词 → 返回搜索结果
+  - Channel A: 搜索引擎 (DDG + Bing) → 动态搜索词 → 返回搜索结果
   - Channel B: 权威数据源 → 已知 URL 直接抓取 → 返回结构化文本
 
-Phase 1: AI 提取
-  - DeepSeek 从原始内容提取 KnowledgeAtom
+Phase 1: AI 提取 → KnowledgeAtom
+Phase 2: 质量验证（结构 + 数值边界 + AI 交叉验证）
+Phase 3: 输出 .ts 文件（只写质量分 ≥ 阈值）
 
-Phase 2: 质量验证（三层校验）
-  - Layer 1: 结构校验（必填字段/格式）
-  - Layer 2: 数值边界（薪资/费用不能超出合理范围）
-  - Layer 3: AI 交叉验证（数据是否合理/来源是否可信）
-
-Phase 3: 输出
-  - 只写通过质量阈值 (≥60分) 的原子
-  - 生成 .ts 文件到知识库目录
-  - 汇总待注册条目
+两种模式：
+  1. 动态模式 (--profile): 根据用户画像生成搜索词，千人千面
+  2. 批量模式 (默认): 使用预设的 CS 专业搜索词做种子数据
 
 用法:
+  # 动态模式 — 根据用户画像爬取
+  python main.py --profile '{"major":"金融学","targetCity":"上海","budget":200000}'
+
+  # 批量模式 — 预设搜索词
   python main.py                          # 全量运行
   python main.py --category salary        # 只爬薪资
   python main.py --dry-run                # 预演
@@ -31,6 +30,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Optional
 
 from chinese_scraper_utils import DeepSeekClient  # type: ignore
 
@@ -46,6 +46,7 @@ from scrape import AUTHORITATIVE_SOURCES, scrape_target
 from extract import extract_atom
 from validate import validate_atom
 from output import write_atom_file
+from query_builder import UserContext, build_search_queries
 
 
 def main(argv: list[str] | None = None):
@@ -63,15 +64,45 @@ def main(argv: list[str] | None = None):
     rejected_atoms = 0
     all_new_ids: list[tuple[str, str, int]] = []  # [(id, category, score)]
 
-    # 筛选数据源
-    sources = ALL_SOURCES
-    authoritative = AUTHORITATIVE_SOURCES
-    if args.category:
-        sources = [s for s in ALL_SOURCES if s["category"] == args.category]
-        authoritative = [s for s in AUTHORITATIVE_SOURCES if s.category == args.category]
-        if not sources:
-            print(f"未找到类别: {args.category}")
-            sys.exit(1)
+    # === 动态模式：根据用户画像生成搜索词 ===
+    if args.profile:
+        ctx = _parse_profile(args.profile)
+        print(f"\n🎯 动态模式 — 用户画像:")
+        print(f"   专业: {ctx.major or '未知'}")
+        print(f"   城市: {ctx.target_city or '未知'}")
+        print(f"   预算: {ctx.budget or '未知'}")
+        print(f"   兴趣: {ctx.interests or '未知'}")
+        print(f"   层次: {ctx.university_tier or '未知'}")
+
+        dynamic_queries = build_search_queries(ctx, args.category and [args.category])
+        # 转为 sources 格式
+        sources = [
+            {"category": cat, "search_queries": qs}
+            for cat, qs in dynamic_queries.items() if qs
+        ]
+        if args.category:
+            authoritative = [
+                s for s in AUTHORITATIVE_SOURCES if s.category == args.category
+            ]
+        else:
+            authoritative = AUTHORITATIVE_SOURCES
+
+        for src in sources:
+            print(f"\n  [{src['category']}] {len(src['search_queries'])} 个搜索词:")
+            for q in src['search_queries']:
+                print(f"    - {q}")
+    else:
+        # === 批量模式：使用预设搜索词 ===
+        sources = ALL_SOURCES
+        authoritative = AUTHORITATIVE_SOURCES
+        if args.category:
+            sources = [s for s in ALL_SOURCES if s["category"] == args.category]
+            authoritative = [
+                s for s in AUTHORITATIVE_SOURCES if s.category == args.category
+            ]
+            if not sources:
+                print(f"未找到类别: {args.category}")
+                sys.exit(1)
 
     # ================================================================
     # Phase 0: 数据获取 — 搜索 + 权威抓取
@@ -90,14 +121,15 @@ def main(argv: list[str] | None = None):
         for src in sources:
             category = src["category"]
             for i, query in enumerate(src["search_queries"]):
-                cache_file = CACHE_DIR / f"search_{category}_{i}.json"
+                cache_key = f"search_{category}_{_safe_filename(query[:50])}"
+                cache_file = CACHE_DIR / f"{cache_key}.json"
 
                 if args.skip_search and cache_file.exists():
                     results = json.loads(cache_file.read_text("utf-8"))
-                    print(f"  [{category}] 缓存: {query[:40]}... ({len(results)} 条)")
+                    print(f"  [{category}] 缓存: {query[:50]}... ({len(results)} 条)")
                 elif not args.skip_search:
                     results = search_knowledge_data(query, max_results=8)
-                    print(f"  [{category}] 搜索: {query[:40]}... ({len(results)} 条)")
+                    print(f"  [{category}] 搜索: {query[:50]}... ({len(results)} 条)")
                     cache_file.write_text(
                         json.dumps(results, ensure_ascii=False, indent=2),
                         encoding="utf-8",
@@ -108,7 +140,7 @@ def main(argv: list[str] | None = None):
                 if results:
                     all_raw_data.append({
                         "category": category,
-                        "source": f"search:{query[:40]}",
+                        "source": f"search:{query[:50]}",
                         "results": results,
                     })
 
@@ -116,9 +148,9 @@ def main(argv: list[str] | None = None):
     if not args.skip_search and authoritative:
         print("\n--- Channel B: 权威数据源直接抓取 ---")
         for target in authoritative:
-            cache_file = CACHE_DIR / f"scrape_{target.name.replace(' ', '_')}.json"
+            cache_file = CACHE_DIR / f"scrape_{_safe_filename(target.name)}.json"
 
-            if args.skip_cache and cache_file.exists():
+            if not args.skip_cache and cache_file.exists():
                 text = cache_file.read_text("utf-8")
                 print(f"  [{target.category}] 缓存: {target.name}")
             else:
@@ -127,7 +159,6 @@ def main(argv: list[str] | None = None):
                     cache_file.write_text(text, encoding="utf-8")
 
             if text:
-                # 将抓取结果包装为搜索结果的格式
                 all_raw_data.append({
                     "category": target.category,
                     "source": f"scrape:{target.name}",
@@ -136,7 +167,6 @@ def main(argv: list[str] | None = None):
                         "url": target.url,
                         "snippet": text[:500],
                     }],
-                    # 额外携带完整文本供 AI 提取使用
                     "full_text": text,
                     "trust_level": target.trust_level,
                 })
@@ -233,6 +263,10 @@ def parse_args(argv: list[str]) -> "argparse.Namespace":
     import argparse
 
     parser = argparse.ArgumentParser(description="Career Maze 知识库数据爬虫")
+    parser.add_argument(
+        "--profile", "-p", type=str,
+        help='用户画像 JSON，动态生成搜索词。例如: \'{"major":"金融学","targetCity":"上海"}\'',
+    )
     parser.add_argument("--category", "-c", type=str, help="只爬取指定类别")
     parser.add_argument("--dry-run", action="store_true", help="预演，不写入文件")
     parser.add_argument("--skip-search", action="store_true", help="跳过搜索，仅用缓存")
@@ -246,6 +280,28 @@ def parse_args(argv: list[str]) -> "argparse.Namespace":
         help="最低质量评分阈值（默认 60）",
     )
     return parser.parse_args(argv)
+
+
+def _parse_profile(json_str: str) -> UserContext:
+    """解析 --profile JSON 参数。"""
+    data = json.loads(json_str)
+    return UserContext(
+        major=data.get("major", ""),
+        grade=data.get("grade", ""),
+        university_tier=data.get("universityTier", ""),
+        target_city=data.get("targetCity", ""),
+        budget=data.get("householdBudget", 0) or data.get("budget", 0),
+        interests=data.get("interests", []),
+        lifestyle=data.get("lifestyle", []),
+        red_lines=data.get("redLines", []),
+    )
+
+
+def _safe_filename(text: str) -> str:
+    """将文本转为安全的文件名片段。"""
+    import re
+    text = re.sub(r'[^\w一-鿿]', '_', text)
+    return text[:60]
 
 
 if __name__ == "__main__":
