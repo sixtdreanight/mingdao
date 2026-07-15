@@ -17,11 +17,10 @@ function loadWidth(): number {
 export default function Home() {
   const [resourceWidth, setResourceWidth] = useState(DEFAULT_PANEL);
   const [dragging, setDragging] = useState(false);
-  const dragRef = useRef<number>(0);
+  const dragRef = useRef(0);
 
   useEffect(() => { setResourceWidth(loadWidth()); }, []);
 
-  // Resizable divider — refs for 60fps, flush to state on mouseup
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setDragging(true);
@@ -37,59 +36,40 @@ export default function Home() {
     };
     const onUp = () => {
       setDragging(false);
-      setResourceWidth((w) => {
-        localStorage.setItem('career-maze-resource-width', String(w));
-        return w;
-      });
+      setResourceWidth((w) => { localStorage.setItem('career-maze-resource-width', String(w)); return w; });
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
   }, [dragging]);
 
   return (
-    <main className="flex h-screen flex-col overflow-hidden bg-cream-bg">
-      {/* Header — espresso, anchors the coaching space */}
-      <header className="shrink-0 border-b border-cream-line/20 bg-espresso px-5 py-3">
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
+      {/* Header */}
+      <header className="shrink-0 border-b border-border/40 bg-[#25160C] px-5 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-3">
-            <span className="text-lg font-bold tracking-tight text-cream">
-              Career Maze
-            </span>
-            <span className="hidden text-xs text-cream-line/70 sm:inline">
-              决策教练
-            </span>
+            <span className="text-lg font-bold tracking-tight text-[#FAF4EC]">Career Maze</span>
+            <span className="hidden text-xs text-white/40 sm:inline">决策教练</span>
           </div>
-          <p className="text-xs text-cream-line/40">
-            教你怎么判断，不替你做决定
-          </p>
+          <p className="text-xs text-white/25">教你怎么判断，不替你做决定</p>
         </div>
       </header>
 
-      {/* Body: Chat + Resizable Divider + Resources */}
+      {/* Body: Chat + Resizer + Resources */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Chat — coaching space */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <ChatInterface />
-        </div>
-
-        {/* Resizable divider */}
+        <div className="flex flex-1 flex-col overflow-hidden"><ChatInterface /></div>
         <div
-          className={`hidden shrink-0 lg:block ${dragging ? 'w-1 bg-terracotta/20' : 'w-[4px] bg-cream-line/30 resize-handle'}`}
+          className={`hidden shrink-0 lg:block ${dragging ? 'w-1 bg-primary/20' : 'w-[4px] bg-border/30 resize-handle'}`}
           onMouseDown={onMouseDown}
         />
-
-        {/* Resources panel */}
         <div
-          className="hidden shrink-0 overflow-hidden border-l border-cream-line/30 bg-cream lg:block"
+          className="hidden shrink-0 overflow-hidden border-l border-border/30 bg-sidebar lg:block"
           style={{ width: resourceWidth, transition: dragging ? 'none' : 'width 200ms ease-out' }}
         >
           <ResourcePanel />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

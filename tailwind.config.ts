@@ -5,27 +5,34 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Warm Professional palette — grounded in coaching & mentorship
-        espresso: {
-          DEFAULT: '#2C1A0E',   // headings, primary text — rich brown-black
-          muted: '#4A3728',      // body text
-          light: '#6B5A4E',      // secondary text
+        // shadcn CSS variable mapping
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        card: { DEFAULT: 'var(--card)', foreground: 'var(--card-foreground)' },
+        popover: { DEFAULT: 'var(--popover)', foreground: 'var(--popover-foreground)' },
+        primary: { DEFAULT: 'var(--primary)', foreground: 'var(--primary-foreground)' },
+        secondary: { DEFAULT: 'var(--secondary)', foreground: 'var(--secondary-foreground)' },
+        muted: { DEFAULT: 'var(--muted)', foreground: 'var(--muted-foreground)' },
+        accent: { DEFAULT: 'var(--accent)', foreground: 'var(--accent-foreground)' },
+        destructive: { DEFAULT: 'var(--destructive)', foreground: 'var(--destructive-foreground)' },
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        sidebar: {
+          background: 'var(--sidebar-background)',
+          foreground: 'var(--sidebar-foreground)',
+          primary: 'var(--sidebar-primary)',
+          'primary-foreground': 'var(--sidebar-primary-foreground)',
+          accent: 'var(--sidebar-accent)',
+          'accent-foreground': 'var(--sidebar-accent-foreground)',
+          border: 'var(--sidebar-border)',
+          ring: 'var(--sidebar-ring)',
         },
-        cream: {
-          DEFAULT: '#FAF4EC',    // card surfaces — warm but not yellow
-          bg: '#FDF9F4',         // page background — barely off-white
-          line: '#D9C9B0',       // borders, dividers — taupe
-        },
-        terracotta: {
-          light: '#F5E1D8',     // accent bg
-          DEFAULT: '#C96442',   // primary accent — warm, emotional, human
-          deep: '#A0452A',      // hover/active
-        },
-        sage: {
-          light: '#EDF2EC',
-          DEFAULT: '#4A6741',   // trust, positive states — calm green
-          deep: '#3A5233',
-        },
+        // Keep custom palette for backward compat
+        espresso: { DEFAULT: '#2C1A0E', muted: '#4A3728', light: '#6B5A4E' },
+        cream: { DEFAULT: '#FAF4EC', bg: '#FDF9F4', line: '#D9C9B0' },
+        terracotta: { light: '#F5E1D8', DEFAULT: '#C96442', deep: '#A0452A' },
+        sage: { light: '#EDF2EC', DEFAULT: '#4A6741', deep: '#3A5233' },
       },
       fontFamily: {
         sans: ['"Inter"', '"Noto Sans SC"', 'system-ui', 'sans-serif'],
