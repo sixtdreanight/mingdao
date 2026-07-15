@@ -7,41 +7,42 @@ interface MessageBubbleProps {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
 
-  // 将 Markdown 格式的 AI 回复中的 **text** 转为 HTML
   const formattedContent = message.content
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n/g, '<br/>');
 
   return (
-    <div className={`mb-4 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`mb-5 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+        className={
           isUser
-            ? 'bg-brand-500 text-white'
-            : 'border border-gray-200 bg-white text-gray-900'
-        }`}
+            ? // User: clean, right-aligned, warm gray bg
+              'max-w-[80%] rounded-2xl rounded-br-md bg-ink/5 px-4 py-3'
+            : // Coach: white card with amber left-border accent — the signature element
+              'max-w-[85%] rounded-r-2xl rounded-bl-md border-l-[3px] border-amber bg-white px-4 py-3 shadow-sm'
+        }
       >
+        {/* Coach label */}
+        {!isUser && (
+          <p className="mb-1 text-xs font-medium tracking-wide text-amber">
+            教练
+          </p>
+        )}
+
         <div
-          className="whitespace-pre-wrap text-sm leading-relaxed"
+          className={`whitespace-pre-wrap text-sm leading-relaxed ${
+            isUser ? 'text-ink' : 'text-ink'
+          }`}
           dangerouslySetInnerHTML={{ __html: formattedContent }}
         />
 
+        {/* Source citations */}
         {message.sources && message.sources.length > 0 && (
-          <div className="mt-3 border-t border-gray-100 pt-2">
-            <p className="mb-1 text-xs text-gray-400">参考数据来源：</p>
-            {message.sources.map((atom) => (
-              <div key={atom.id} className="text-xs text-gray-500">
-                · {atom.title}
-                {atom.sourceUrl && (
-                  <a
-                    href={atom.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-1 text-brand-500 hover:underline"
-                  >
-                    [来源]
-                  </a>
-                )}
+          <div className="mt-3 border-t border-amber-light/80 pt-2">
+            <p className="mb-1 text-xs text-ink-faint">参考数据</p>
+            {message.sources.slice(0, 3).map((atom) => (
+              <div key={atom.id} className="text-xs text-ink-muted">
+                <span className="text-amber">·</span> {atom.title}
               </div>
             ))}
           </div>

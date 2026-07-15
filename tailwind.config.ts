@@ -5,26 +5,34 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#f0f5ff',
-          100: '#e0ebff',
-          500: '#4f6ef7',
-          700: '#3b4fcf',
-          900: '#1e2a6e',
+        // Warm Paper & Ink palette
+        paper: {
+          DEFAULT: '#F9F6F0',   // page background — warm, not cold white
+          hover: '#F3EFE7',     // subtle hover state
         },
-        surface: {
-          DEFAULT: '#ffffff',
-          muted: '#f6f8fa',
-          elevated: '#ffffff',
+        ink: {
+          DEFAULT: '#1C1917',   // primary text — warm charcoal
+          muted: '#78716C',     // secondary text — pencil gray
+          faint: '#A8A29E',     // tertiary text — barely there
         },
-        text: {
-          primary: '#111827',
-          secondary: '#6b7280',
-          muted: '#9ca3af',
+        amber: {
+          light: '#FEF3C7',     // accent background
+          DEFAULT: '#B7611E',   // accent — desk lamp glow
+          deep: '#92400E',      // accent hover/active
+        },
+        sage: {
+          light: '#ECF4EE',     // trust background
+          DEFAULT: '#3B6B4F',   // trust/positive — calm green
+          deep: '#2D5A3E',      // trust hover
         },
       },
       fontFamily: {
-        sans: ['"Noto Sans SC"', '"Inter"', 'system-ui', 'sans-serif'],
+        sans: [
+          '"Noto Sans SC"',
+          'system-ui',
+          '-apple-system',
+          'sans-serif',
+        ],
         mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
       },
     },

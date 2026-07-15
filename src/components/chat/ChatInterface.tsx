@@ -58,12 +58,12 @@ export function ChatInterface() {
         const aiMsg: ChatMessage = {
           role: 'assistant',
           content: json.data.reply,
+          sources: json.data.sources,
           timestamp: new Date().toISOString(),
         };
 
         setMessages((prev) => [...prev, aiMsg]);
 
-        // 更新角色卡
         if (json.data.profile) {
           setProfile((prev) => mergeProfile(prev, json.data.profile));
         }
@@ -99,12 +99,11 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-2xl flex-col">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        {/* Profile Card — shown after first user message */}
+    <div className="mx-auto flex h-[calc(100vh-3.5rem)] max-w-2xl flex-col bg-paper">
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
         {messages.length > 1 && (
-          <div className="mb-4">
+          <div className="mb-6">
             <ProfileCard profile={profile} />
           </div>
         )}
@@ -112,12 +111,15 @@ export function ChatInterface() {
           <MessageBubble key={i} message={msg} />
         ))}
         {loading && (
-          <div className="mb-4 flex justify-start">
-            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 animate-bounce rounded-full bg-brand-500" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-brand-500 [animation-delay:0.1s]" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-brand-500 [animation-delay:0.2s]" />
+          <div className="mb-5 flex justify-start">
+            <div className="rounded-r-2xl rounded-bl-md border-l-[3px] border-amber/50 bg-white px-4 py-3 shadow-sm">
+              <p className="mb-2 text-xs font-medium tracking-wide text-amber/70">
+                教练
+              </p>
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 animate-bounce rounded-full bg-amber/60" />
+                <div className="h-2 w-2 animate-bounce rounded-full bg-amber/60 [animation-delay:0.12s]" />
+                <div className="h-2 w-2 animate-bounce rounded-full bg-amber/60 [animation-delay:0.24s]" />
               </div>
             </div>
           </div>
@@ -125,8 +127,8 @@ export function ChatInterface() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="border-t border-gray-200 bg-white px-4 py-3">
+      {/* Input area — grounded, warm */}
+      <div className="border-t border-amber-light/40 bg-white/70 px-4 py-3 backdrop-blur-sm sm:px-6">
         <div className="flex items-end gap-2">
           <textarea
             value={input}
@@ -134,26 +136,25 @@ export function ChatInterface() {
             onKeyDown={handleKeyDown}
             placeholder="输入你的回答..."
             rows={2}
-            className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="flex-1 resize-none rounded-xl border border-amber-light/60 bg-white px-4 py-2.5 text-sm text-ink placeholder-ink-faint transition-colors focus:border-amber focus:outline-none focus:ring-1 focus:ring-amber/30"
             disabled={loading}
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-amber px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-amber-deep disabled:cursor-not-allowed disabled:opacity-30"
           >
             发送
           </button>
         </div>
-        <p className="mt-1.5 text-center text-xs text-gray-400">
-          AI 是决策教练，不是答案提供者。教你怎么判断，不替你做决定。
+        <p className="mt-2 text-center text-xs text-ink-faint">
+          AI 是决策教练，教你怎么判断，不替你做决定
         </p>
       </div>
     </div>
   );
 }
 
-/** 深度合并两个 profile，新值覆盖旧值，数组字段合并去重 */
 function mergeProfile(
   old: Partial<UserProfile>,
   incoming: Partial<UserProfile>
@@ -165,18 +166,16 @@ function mergeProfile(
     if (newVal === undefined || newVal === null) continue;
 
     if (Array.isArray(newVal) && Array.isArray(merged[key])) {
-      // 合并数组字段（去重）
       const existing = merged[key] as string[];
-      const incoming_arr = newVal as string[];
+      const incomingArr = newVal as string[];
       const combined = [...existing];
-      for (const item of incoming_arr) {
+      for (const item of incomingArr) {
         if (!combined.includes(item)) combined.push(item);
       }
       (merged as Record<string, unknown>)[key] = combined;
     } else if (Array.isArray(newVal)) {
       (merged as Record<string, unknown>)[key] = [...(newVal as string[])];
     } else {
-      // 字符串/数字直接覆盖
       (merged as Record<string, unknown>)[key] = newVal;
     }
   }

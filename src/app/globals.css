@@ -4,41 +4,56 @@
 
 @layer base {
   :root {
-    --trust-official: #059669;
-    --trust-ai: #d97706;
-    --trust-community: #dc2626;
+    --trust-official: #3B6B4F;
+    --trust-ai: #B7611E;
+    --trust-community: #B45309;
+  }
+
+  html {
+    background-color: #F9F6F0;
   }
 
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #F9F6F0;
+    color: #1C1917;
+  }
+
+  /* Focus ring — warm amber, not default blue */
+  *:focus-visible {
+    outline: 2px solid #B7611E;
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
 @layer components {
+  /* Trust badges */
   .trust-badge-official {
-    @apply inline-flex items-center gap-1 rounded-full border border-emerald-200
-           bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700;
+    @apply inline-flex items-center gap-1 rounded-full border border-sage-light
+           bg-sage-light px-2 py-0.5 text-xs font-medium text-sage-deep;
   }
   .trust-badge-ai {
-    @apply inline-flex items-center gap-1 rounded-full border border-amber-200
-           bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700;
+    @apply inline-flex items-center gap-1 rounded-full border border-amber-light
+           bg-amber-light px-2 py-0.5 text-xs font-medium text-amber-deep;
   }
   .trust-badge-community {
-    @apply inline-flex items-center gap-1 rounded-full border border-red-200
+    @apply inline-flex items-center gap-1 rounded-full border border-red-100
            bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700;
   }
 
+  /* Trend indicators */
   .trend-rising {
-    @apply inline-flex items-center gap-1 text-emerald-600 text-sm font-medium;
+    @apply inline-flex items-center gap-1 text-sage font-medium;
   }
   .trend-stable {
-    @apply inline-flex items-center gap-1 text-blue-600 text-sm font-medium;
+    @apply inline-flex items-center gap-1 text-ink-muted font-medium;
   }
   .trend-declining {
-    @apply inline-flex items-center gap-1 text-amber-600 text-sm font-medium;
+    @apply inline-flex items-center gap-1 text-amber font-medium;
   }
   .trend-risk {
-    @apply inline-flex items-center gap-1 text-red-600 text-sm font-medium;
+    @apply inline-flex items-center gap-1 text-red-600 font-medium;
   }
 }
