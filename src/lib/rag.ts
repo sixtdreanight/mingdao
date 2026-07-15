@@ -165,7 +165,7 @@ export function buildSystemPrompt(
     }
   }
 
-  return `你是 Career Maze 的职业规划助手。
+  return `你是 明道 的职业规划助手。
 
 你的使命：教会学生如何做职业决策，而不是替他们做决策。
 你要让学生离开这次对话后，下次遇到类似选择时自己能分析。

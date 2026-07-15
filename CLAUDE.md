@@ -1,4 +1,4 @@
-# Career Maze — Project Context for AI Assistants
+# 明道 — Project Context for AI Assistants
 
 ## What This Is
 A career planning tool for Chinese university students. Helps students see the real costs and tradeoffs of each path so they can make their own decisions.

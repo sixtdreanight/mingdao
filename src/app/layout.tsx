@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'Career Maze — 把每条路看清楚',
-  description: '把每条路真实的样子摊开来看。代价、回报、风险。看清楚了，自己选。',
+  title: '明道 — 为你探明前路',
+  description: '为你探明前路。',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

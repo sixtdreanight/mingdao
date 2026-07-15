@@ -18,7 +18,7 @@ export default function Home() {
           <div className="flex items-center gap-6">
             <div className="flex items-baseline gap-2">
               <Compass className="h-5 w-5 text-primary" />
-              <span className="text-base font-bold tracking-tight text-[#FAF4EC]">Career Maze</span>
+              <span className="text-base font-bold tracking-tight text-[#FAF4EC]">明道</span>
             </div>
             <nav className="flex items-center gap-1">
               <button

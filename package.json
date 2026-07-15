@@ -1,7 +1,7 @@
 {
-  "name": "career-maze",
+  "name": "mingdao",
   "version": "0.1.0",
-  "description": "把每条路的真实代价摊开来看，决定你自己做",
+  "description": "为你探明前路",
   "keywords": [
     "career-planning",
     "education",
@@ -10,13 +10,13 @@
     "rag",
     "chatbot"
   ],
-  "homepage": "https://github.com/sixtdreanight/career-maze",
+  "homepage": "https://github.com/sixtdreanight/mingdao",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sixtdreanight/career-maze.git"
+    "url": "https://github.com/sixtdreanight/mingdao.git"
   },
   "bugs": {
-    "url": "https://github.com/sixtdreanight/career-maze/issues"
+    "url": "https://github.com/sixtdreanight/mingdao/issues"
   },
   "author": "梦夜十六 <sixtdreanight@gmail.com>",
   "license": "MIT",

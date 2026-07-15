@@ -1,6 +1,6 @@
-# Career Maze — 学会做自己的职业决策
+# 明道 — 为你探明前路
 
-> 把每条路的代价和回报都摊开来看。看清楚了，你自己选。
+> 照亮前路，你自己走。
 
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
