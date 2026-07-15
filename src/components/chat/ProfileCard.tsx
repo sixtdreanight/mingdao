@@ -115,15 +115,40 @@ export function ProfileCard({ profile }: ProfileCardProps) {
 
       {/* Progress bar */}
       <div className="border-t border-brand-50 px-4 py-2.5">
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>信息完整度</span>
-          <span className="font-medium text-brand-600">{pct}%</span>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-gray-500">信息完整度</span>
+          <span
+            className={`font-medium ${
+              filled >= 6
+                ? 'text-emerald-600'
+                : filled >= 4
+                  ? 'text-amber-600'
+                  : 'text-gray-400'
+            }`}
+          >
+            {pct}%
+          </span>
         </div>
         <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
           <div
-            className="h-full rounded-full bg-brand-500 transition-all duration-500 ease-out"
+            className={`h-full rounded-full transition-all duration-500 ease-out ${
+              filled >= 6
+                ? 'bg-emerald-500'
+                : filled >= 4
+                  ? 'bg-amber-400'
+                  : 'bg-gray-300'
+            }`}
             style={{ width: `${pct}%` }}
           />
+        </div>
+        <div className="mt-1 text-center text-xs">
+          {filled >= 6 ? (
+            <span className="text-emerald-600">✓ 信息充足，可以推荐</span>
+          ) : filled >= 4 ? (
+            <span className="text-amber-600">信息收集中，还需继续了解</span>
+          ) : (
+            <span className="text-gray-400">才刚刚开始，多聊聊吧</span>
+          )}
         </div>
       </div>
     </div>
