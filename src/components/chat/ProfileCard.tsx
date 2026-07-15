@@ -143,11 +143,11 @@ export function ProfileCard({ profile }: ProfileCardProps) {
         </div>
         <div className="mt-1 text-center text-xs">
           {filled >= 6 ? (
-            <span className="text-emerald-600">✓ 信息充足，可以推荐</span>
+            <span className="text-emerald-600">✓ 信息充足，可以开始分析</span>
           ) : filled >= 4 ? (
-            <span className="text-amber-600">信息收集中，还需继续了解</span>
+            <span className="text-amber-600">继续了解，不急着下判断</span>
           ) : (
-            <span className="text-gray-400">才刚刚开始，多聊聊吧</span>
+            <span className="text-gray-400">慢慢来，先聊聊你的情况</span>
           )}
         </div>
       </div>

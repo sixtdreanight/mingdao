@@ -7,13 +7,15 @@ import { ProfileCard } from './ProfileCard';
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant',
-  content: `嗨！我是 Career Maze 的规划助手 👋
+  content: `嗨！我是 Career Maze 的决策教练 👋
 
-我不会替你决定走哪条路，但我会一步步帮你理清每一条路的真实样貌——代价、回报、风险、日常，都摆在你面前。
+我的职责不是告诉你该走哪条路，而是帮你**学会怎么判断一条路适不适合自己**——看清每条路的代价与回报，理解取舍背后的逻辑。
 
-我们先从最简单的问题开始吧：
+这样下次你遇到选择时，不需要我也能自己分析。
 
-**你目前大几？学的是什么专业？**`,
+我们从最简单的开始：
+
+**你现在大几？学什么专业？**`,
   timestamp: new Date().toISOString(),
 };
 
@@ -144,7 +146,7 @@ export function ChatInterface() {
           </button>
         </div>
         <p className="mt-1.5 text-center text-xs text-gray-400">
-          AI 仅基于知识库数据推理，不会替你做决定。数据来源可追溯。
+          AI 是决策教练，不是答案提供者。教你怎么判断，不替你做决定。
         </p>
       </div>
     </div>

@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Career Maze — 找到属于你的路',
-  description: '一个帮大学生在信息迷雾中找到方向的引导式决策工具',
+  title: 'Career Maze — 学会做自己的职业决策',
+  description: '决策教练，不是答案提供者。教会你如何判断，不替你决定。',
 };
 
 export default function RootLayout({
