@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --trust-official: #059669;
+    --trust-ai: #d97706;
+    --trust-community: #dc2626;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .trust-badge-official {
+    @apply inline-flex items-center gap-1 rounded-full border border-emerald-200
+           bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700;
+  }
+  .trust-badge-ai {
+    @apply inline-flex items-center gap-1 rounded-full border border-amber-200
+           bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700;
+  }
+  .trust-badge-community {
+    @apply inline-flex items-center gap-1 rounded-full border border-red-200
+           bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700;
+  }
+
+  .trend-rising {
+    @apply inline-flex items-center gap-1 text-emerald-600 text-sm font-medium;
+  }
+  .trend-stable {
+    @apply inline-flex items-center gap-1 text-blue-600 text-sm font-medium;
+  }
+  .trend-declining {
+    @apply inline-flex items-center gap-1 text-amber-600 text-sm font-medium;
+  }
+  .trend-risk {
+    @apply inline-flex items-center gap-1 text-red-600 text-sm font-medium;
+  }
+}
