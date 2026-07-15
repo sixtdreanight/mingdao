@@ -3,35 +3,55 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    background-color: #F5F0E8;
-  }
+  html { background-color: #FDF9F4; }
 
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #F5F0E8;
-    color: #1A1512;
+    background-color: #FDF9F4;
+    color: #2C1A0E;
   }
 
   *:focus-visible {
-    outline: 2px solid #C17F3E;
+    outline: 2px solid #C96442;
     outline-offset: 2px;
     border-radius: 3px;
   }
+
+  /* Smooth scroll for chat */
+  .chat-scroll { scroll-behavior: smooth; }
+
+  /* Resizable divider */
+  .resize-handle {
+    cursor: col-resize;
+    transition: background-color 150ms ease;
+  }
+  .resize-handle:hover,
+  .resize-handle:active { background-color: rgba(201, 100, 66, 0.12); }
 }
 
 @layer components {
+  /* Trust badges */
   .trust-badge-official {
     @apply inline-flex items-center gap-1 rounded-full border border-sage-light
            bg-sage-light px-2 py-0.5 text-xs font-medium text-sage-deep;
   }
   .trust-badge-ai {
-    @apply inline-flex items-center gap-1 rounded-full border border-brass-light
-           bg-brass-light px-2 py-0.5 text-xs font-medium text-brass-deep;
+    @apply inline-flex items-center gap-1 rounded-full border border-terracotta-light
+           bg-terracotta-light px-2 py-0.5 text-xs font-medium text-terracotta-deep;
   }
-  .trust-badge-community {
-    @apply inline-flex items-center gap-1 rounded-full border border-red-100
-           bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700;
+
+  /* Animations — only transform + opacity, respect reduced motion */
+  .fade-in {
+    animation: fadeIn 200ms ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in { animation: none; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; }
   }
 }
