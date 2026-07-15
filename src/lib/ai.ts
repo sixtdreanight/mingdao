@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { CareerPath, ChatMessage } from '@/types';
+import type { ChatMessage, UserProfile } from '@/types';
 import { buildSystemPrompt, searchRelevantPaths } from './rag';
 
 let anthropicClient: Anthropic | null = null;
@@ -17,22 +17,25 @@ function getAnthropicClient(): Anthropic {
 
 export async function chatWithAI(
   messages: ChatMessage[],
-  userProfile?: Record<string, string>
+  userProfile?: Partial<UserProfile>
 ): Promise<string> {
   const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
   if (!lastUserMessage) {
     return '请先告诉我你的情况，我来帮你看看有哪些路可以走。';
   }
 
-  // RAG：检索相关路径
-  const relevantPaths = await searchRelevantPaths(lastUserMessage.content);
+  // RAG：检索相关路径（用最新的用户消息 + 画像信息检索）
+  const searchQuery = buildSearchQuery(lastUserMessage.content, userProfile);
+  const relevantPaths = await searchRelevantPaths(searchQuery);
 
-  // 如果没有匹配的路径，诚实告知
+  // 如果没有匹配的路径，继续引导收集信息
   if (relevantPaths.length === 0) {
     return '目前知识库中还没有完全匹配你问题的路径信息。你可以试试换个方向描述你的需求，或者告诉我你对哪类专业/行业感兴趣？';
   }
 
-  const systemPrompt = buildSystemPrompt(relevantPaths, userProfile);
+  // 将画像转为可读字符串传给 system prompt
+  const profileStr = profileToString(userProfile);
+  const systemPrompt = buildSystemPrompt(relevantPaths, profileStr);
 
   const client = getAnthropicClient();
   const response = await client.messages.create({
@@ -51,28 +54,27 @@ export async function chatWithAI(
   return textBlock?.text ?? '抱歉，我暂时无法回答。请稍后再试。';
 }
 
-export async function extractUserProfile(
-  messages: ChatMessage[]
-): Promise<Record<string, string>> {
-  // 从对话历史中提取用户画像
-  const profile: Record<string, string> = {};
+function buildSearchQuery(
+  latestMsg: string,
+  profile?: Partial<UserProfile>
+): string {
+  const parts = [latestMsg];
+  if (profile?.major) parts.push(profile.major);
+  if (profile?.targetCity) parts.push(profile.targetCity);
+  if (profile?.interests) parts.push(...profile.interests);
+  return parts.join(' ');
+}
 
-  const fullText = messages.map((m) => m.content).join('\n').toLowerCase();
-
-  const patterns: [RegExp, string][] = [
-    [/大[一二三四][上下]|大一|大二|大三|大四/, 'grade'],
-    [/计算机|软件|数学|物理|电子|机械|土木/, 'major'],
-    [/双非|985|211|一本|二本|专科/, 'universityTier'],
-    [/上海|北京|深圳|广州|杭州|成都|武汉|南京/, 'targetCity'],
-    [/漫展|二次元|自由|弹性|远程/i, 'lifestyle'],
-  ];
-
-  for (const [regex, key] of patterns) {
-    const match = fullText.match(regex);
-    if (match && !profile[key]) {
-      profile[key] = match[0];
-    }
-  }
-
-  return profile;
+function profileToString(profile?: Partial<UserProfile>): string {
+  if (!profile) return '';
+  const lines: string[] = [];
+  if (profile.grade) lines.push(`- 年级：${profile.grade}`);
+  if (profile.major) lines.push(`- 专业：${profile.major}`);
+  if (profile.universityTier) lines.push(`- 学校层次：${profile.universityTier}`);
+  if (profile.targetCity) lines.push(`- 目标城市：${profile.targetCity}`);
+  if (profile.householdBudget) lines.push(`- 教育预算：${profile.householdBudget}元`);
+  if (profile.interests?.length) lines.push(`- 兴趣偏好：${profile.interests.join('、')}`);
+  if (profile.lifestyle?.length) lines.push(`- 生活方式：${profile.lifestyle.join('、')}`);
+  if (profile.redLines?.length) lines.push(`- 底线红线：${profile.redLines.join('、')}`);
+  return lines.length > 0 ? `## 已收集的用户信息\n${lines.join('\n')}` : '';
 }

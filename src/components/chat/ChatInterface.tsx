@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import type { ChatMessage } from '@/types';
+import type { ChatMessage, UserProfile } from '@/types';
 import { MessageBubble } from './MessageBubble';
+import { ProfileCard } from './ProfileCard';
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant',
@@ -20,6 +21,7 @@ export function ChatInterface() {
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState<Partial<UserProfile>>({});
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,15 +52,29 @@ export function ChatInterface() {
 
       const json = await res.json();
 
-      const aiMsg: ChatMessage = {
-        role: 'assistant',
-        content: json.success
-          ? json.data.reply
-          : '抱歉，我现在暂时无法回答。请稍后再试。',
-        timestamp: new Date().toISOString(),
-      };
+      if (json.success && json.data) {
+        const aiMsg: ChatMessage = {
+          role: 'assistant',
+          content: json.data.reply,
+          timestamp: new Date().toISOString(),
+        };
 
-      setMessages((prev) => [...prev, aiMsg]);
+        setMessages((prev) => [...prev, aiMsg]);
+
+        // 更新角色卡
+        if (json.data.profile) {
+          setProfile((prev) => mergeProfile(prev, json.data.profile));
+        }
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: '抱歉，我现在暂时无法回答。请稍后再试。',
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -84,6 +100,12 @@ export function ChatInterface() {
     <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-2xl flex-col">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
+        {/* Profile Card — shown after first user message */}
+        {messages.length > 1 && (
+          <div className="mb-4">
+            <ProfileCard profile={profile} />
+          </div>
+        )}
         {messages.map((msg, i) => (
           <MessageBubble key={i} message={msg} />
         ))}
@@ -127,4 +149,35 @@ export function ChatInterface() {
       </div>
     </div>
   );
+}
+
+/** 深度合并两个 profile，新值覆盖旧值，数组字段合并去重 */
+function mergeProfile(
+  old: Partial<UserProfile>,
+  incoming: Partial<UserProfile>
+): Partial<UserProfile> {
+  const merged = { ...old };
+
+  for (const key of Object.keys(incoming) as (keyof UserProfile)[]) {
+    const newVal = incoming[key];
+    if (newVal === undefined || newVal === null) continue;
+
+    if (Array.isArray(newVal) && Array.isArray(merged[key])) {
+      // 合并数组字段（去重）
+      const existing = merged[key] as string[];
+      const incoming_arr = newVal as string[];
+      const combined = [...existing];
+      for (const item of incoming_arr) {
+        if (!combined.includes(item)) combined.push(item);
+      }
+      (merged as Record<string, unknown>)[key] = combined;
+    } else if (Array.isArray(newVal)) {
+      (merged as Record<string, unknown>)[key] = [...(newVal as string[])];
+    } else {
+      // 字符串/数字直接覆盖
+      (merged as Record<string, unknown>)[key] = newVal;
+    }
+  }
+
+  return merged;
 }
