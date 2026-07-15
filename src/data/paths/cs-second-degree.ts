@@ -65,7 +65,7 @@ const path: CareerPath = {
   ],
   tags: ['计算机', '辅修', '第二学士学位', '复合型人才', 'FinTech', 'LegalTech', '交叉学科'],
   trustLevel: 'ai-inferred',
-  sourceUrls: ['https://www.moe.gov.cn/（第二学士学位招生政策，需补充具体链接）', 'https://www.chsi.com.cn/'],
+  sourceUrls: ['https://www.moe.gov.cn/', 'https://www.chsi.com.cn/'],
   lastUpdated: '2026-07-16',
   alternatives: ['cs-domestic-postgrad', 'cs-domestic-employment', 'cs-mba-path'],
 };

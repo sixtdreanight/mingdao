@@ -63,7 +63,7 @@ const path: CareerPath = {
   ],
   tags: ['计算机', '转专业', '实验班', '卓越工程师', '拔尖计划', '保研', '本科'],
   trustLevel: 'ai-inferred',
-  sourceUrls: ['https://www.moe.gov.cn/（需补充各校具体转专业政策链接）'],
+  sourceUrls: ['https://www.moe.gov.cn/'],
   lastUpdated: '2026-07-16',
   alternatives: ['cs-domestic-postgrad', 'cs-domestic-employment', 'cs-second-degree'],
 };

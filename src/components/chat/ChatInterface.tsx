@@ -6,17 +6,13 @@ import { MessageBubble } from './MessageBubble';
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant',
-  content: `你好！我是 Career Maze 的规划助手 👋
+  content: `嗨！我是 Career Maze 的规划助手 👋
 
-我不会替你做决定，但我会帮你把每条路的真面貌看清楚。
+我不会替你决定走哪条路，但我会一步步帮你理清每一条路的真实样貌——代价、回报、风险、日常，都摆在你面前。
 
-先告诉我你的基本情况吧——比如：
-- 你大几了？学什么专业？
-- 有没有特别想去的城市？
-- 你对未来最看重什么？（薪资、自由、稳定、兴趣...）
-- 家里能支持你到什么程度？
+我们先从最简单的问题开始吧：
 
-或者你也可以直接问："学计算机、想去上海、喜欢二次元、希望时间自由一点，有什么路可以走？"`,
+**你目前大几？学的是什么专业？**`,
   timestamp: new Date().toISOString(),
 };
 
@@ -112,7 +108,7 @@ export function ChatInterface() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="说说你的情况..."
+            placeholder="输入你的回答..."
             rows={2}
             className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             disabled={loading}

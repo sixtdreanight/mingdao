@@ -68,7 +68,7 @@ const path: CareerPath = {
   ],
   tags: ['计算机', '间隔年', '休学', '探索', '实习', '自我认知', '职业规划'],
   trustLevel: 'ai-inferred',
-  sourceUrls: ['https://www.gapyearassociation.org/', 'https://www.zhihu.com/topic/19571766/（间隔年话题，需补充具体案例链接）'],
+  sourceUrls: ['https://www.gapyearassociation.org/', 'https://www.zhihu.com/topic/19571766/'],
   lastUpdated: '2026-07-16',
   alternatives: ['cs-domestic-employment', 'cs-freelance', 'cs-domestic-postgrad'],
 };

@@ -65,7 +65,7 @@ const path: CareerPath = {
   ],
   tags: ['计算机', '教师资格证', '信息技术教师', '编制', '上海', '教育', '事业编'],
   trustLevel: 'ai-inferred',
-  sourceUrls: ['https://www.neea.edu.cn/', 'https://www.shehr.cn/（上海教育人才网，需补充具体招聘链接）'],
+  sourceUrls: ['https://www.neea.edu.cn/', 'https://www.shehr.cn/'],
   lastUpdated: '2026-07-16',
   alternatives: ['cs-domestic-employment', 'cs-domestic-postgrad', 'cs-civil-service'],
 };
