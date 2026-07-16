@@ -1,4 +1,5 @@
 import type { KnowledgeAtom, UserProfile } from '@/types';
+import type { StudentCompetencyProfile } from '@/types/competency';
 import { searchAtoms } from '@/data/knowledge';
 
 interface RagResult {
@@ -116,7 +117,8 @@ function extractKeywords(
  */
 export function buildSystemPrompt(
   relevantAtoms: RagResult[],
-  profile?: Partial<UserProfile>
+  profile?: Partial<UserProfile>,
+  competencyProfile?: StudentCompetencyProfile
 ): string {
   // 按类别分组展示检索到的原子事实
   const categoryLabels: Record<string, string> = {
@@ -163,6 +165,19 @@ export function buildSystemPrompt(
     if (lines.length > 0) {
       profileSection = `\n## 用户画像\n${lines.join('\n')}\n`;
     }
+  }
+
+  // 能力画像
+  let competencySection = '';
+  if (competencyProfile?.targetCareer) {
+    competencySection = `\n## 能力画像\n- 目标职业：${competencyProfile.targetCareer}`;
+    if (competencyProfile.selfAssessments.length > 0) {
+      competencySection += `\n- 已评估 ${competencyProfile.selfAssessments.length} 项能力`;
+    }
+    competencySection += '\n\n如果学生提到与目标职业相关的能力话题，你可以：\n';
+    competencySection += '- 引导学生反思当前能力水平与目标的差距\n';
+    competencySection += '- 推荐具体的学习资源（从资源库匹配）\n';
+    competencySection += '- 但不要直接说"你应该学X"——问学生"你觉得当前哪项能力最需要提升？"\n';
   }
 
   return `你是 明道 的职业规划助手。
@@ -212,5 +227,5 @@ export function buildSystemPrompt(
 
 ${atomsSection || '（数据不足，诚实告知学生哪些信息无法验证）'}
 
-${profileSection}`;
+${profileSection}${competencySection}`;
 }

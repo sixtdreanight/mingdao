@@ -13,6 +13,7 @@ export async function POST(
   try {
     const body = await request.json();
     const messages: ChatMessage[] = body.messages;
+    const competencyProfile = body.competencyProfile;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -22,7 +23,7 @@ export async function POST(
     }
 
     const profile = extractProfile(messages);
-    const { reply, sources } = await chatWithAI(messages, profile);
+    const { reply, sources } = await chatWithAI(messages, profile, competencyProfile);
 
     return NextResponse.json({
       success: true,

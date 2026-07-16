@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ChatMessage, UserProfile } from '@/types';
+import type { StudentCompetencyProfile } from '@/types/competency';
 import { buildSystemPrompt, searchRelevantAtoms } from './rag';
 
 let anthropicClient: Anthropic | null = null;
@@ -17,7 +18,8 @@ function getAnthropicClient(): Anthropic {
 
 export async function chatWithAI(
   messages: ChatMessage[],
-  userProfile?: Partial<UserProfile>
+  userProfile?: Partial<UserProfile>,
+  competencyProfile?: StudentCompetencyProfile
 ): Promise<{ reply: string; sources: ChatMessage['sources'] }> {
   const lastUserMessage = [...messages].reverse().find(
     (m) => m.role === 'user'
@@ -34,7 +36,7 @@ export async function chatWithAI(
   const relevantAtoms = await searchRelevantAtoms(searchQuery, userProfile);
 
   // 构建系统提示词
-  const systemPrompt = buildSystemPrompt(relevantAtoms, userProfile);
+  const systemPrompt = buildSystemPrompt(relevantAtoms, userProfile, competencyProfile);
 
   const client = getAnthropicClient();
   const response = await client.messages.create({
