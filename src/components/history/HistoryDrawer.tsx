@@ -1,14 +1,27 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, Search } from 'lucide-react';
+import { getActivities, getStats, type ActivityEntry } from '@/lib/activity-store';
 
 interface HistoryDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-/** Stub — will be fully implemented in Task 5 */
 export function HistoryDrawer({ open, onClose }: HistoryDrawerProps) {
+  const [activities, setActivities] = useState<ActivityEntry[]>([]);
+  const [search, setSearch] = useState('');
+  const stats = getStats();
+
+  useEffect(() => {
+    if (open) setActivities(getActivities());
+  }, [open]);
+
+  const filtered = search.trim()
+    ? activities.filter((a) => a.title.includes(search) || (a.detail || '').includes(search))
+    : activities;
+
   if (!open) return null;
 
   return (
@@ -26,9 +39,54 @@ export function HistoryDrawer({ open, onClose }: HistoryDrawerProps) {
           </button>
         </div>
 
-        {/* 空状态 */}
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-xs text-muted-foreground">暂无活动记录</p>
+        {/* 搜索 */}
+        <div className="border-b border-border/30 px-4 py-2">
+          <div className="flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-1.5">
+            <Search className="h-3.5 w-3.5 text-muted-foreground/50" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="搜索历史..."
+              className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* 活动列表 */}
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          {filtered.length === 0 ? (
+            <p className="py-8 text-center text-xs text-muted-foreground">
+              {search ? '无匹配记录' : '暂无活动记录'}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {filtered.map((a) => (
+                <div key={a.id} className="rounded-lg border border-border/40 bg-background px-3 py-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-foreground">{a.title}</span>
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {new Date(a.timestamp).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })}
+                    </span>
+                  </div>
+                  {a.detail && <p className="mt-0.5 text-[11px] text-muted-foreground/70">{a.detail}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 统计 */}
+        <div className="border-t border-border/50 px-4 py-3">
+          <div className="grid grid-cols-2 gap-2 text-center">
+            <div className="rounded-lg bg-secondary/50 px-3 py-2">
+              <p className="text-lg font-bold text-foreground font-serif-hero">{stats.totalConversations}</p>
+              <p className="text-[10px] text-muted-foreground">总对话</p>
+            </div>
+            <div className="rounded-lg bg-secondary/50 px-3 py-2">
+              <p className="text-lg font-bold text-foreground font-serif-hero">{stats.competencyAssessments}</p>
+              <p className="text-[10px] text-muted-foreground">能力评估</p>
+            </div>
+          </div>
         </div>
       </div>
     </>
