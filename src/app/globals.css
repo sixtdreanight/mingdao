@@ -50,4 +50,28 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; }
   }
+
+  .font-serif-hero {
+    font-family: 'STSong', 'SimSun', 'Noto Serif SC', 'Source Han Serif SC', serif;
+  }
+
+  .noise-bg {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+}
+
+@keyframes hero-reveal {
+  from { opacity: 0; filter: blur(12px); transform: translateY(8px); }
+  to   { opacity: 1; filter: blur(0);   transform: translateY(0); }
+}
+.hero-reveal {
+  animation: hero-reveal 1.2s ease-out forwards;
+}
+.hero-reveal-delay-1 { animation-delay: 0.2s; opacity: 0; }
+.hero-reveal-delay-2 { animation-delay: 0.5s; opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-reveal, .hero-reveal-delay-1, .hero-reveal-delay-2 {
+    animation: none; opacity: 1; filter: none; transform: none;
+  }
 }
