@@ -7,7 +7,8 @@ export type AtomCategory =
   | 'trend'
   | 'policy'
   | 'cost'
-  | 'life';
+  | 'life'
+  | 'competency';
 
 /** 一条原子事实 — 知识库的最小存储单元 */
 export interface KnowledgeAtom {
@@ -31,6 +32,13 @@ export interface UserProfile {
   interests: string[];
   lifestyle: string[];
   redLines: string[];
+  /** 学生关注的目标职业 */
+  targetCareer?: string;
+  /** 当前能力自评列表 */
+  currentCompetencies?: {
+    name: string;
+    selfAssessedLevel: number;  // 1-5
+  }[];
 }
 
 export interface ChatMessage {
