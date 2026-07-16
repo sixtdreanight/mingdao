@@ -1,4 +1,5 @@
 import type { UserProfile } from '@/types';
+import type { InferredSignal, ProficiencyLevel } from '@/types/competency';
 
 /**
  * 从对话历史中渐进提取用户画像。
@@ -122,4 +123,49 @@ export function extractProfile(
   if (redLines.length > 0) profile.redLines = redLines;
 
   return profile;
+}
+
+/**
+ * 从对话历史中提取学生暴露的能力信号。
+ * 基于正则模式匹配学生提到的技能、课程、证书、项目经历，
+ * 推断相关能力及其水平。
+ */
+export function extractCompetencySignals(
+  messages: { role: string; content: string }[]
+): InferredSignal[] {
+  const fullText = messages.map((m) => m.content).join('\n');
+  const signals: InferredSignal[] = [];
+
+  // 学生自述的能力水平模式
+  const patterns: [RegExp, string, ProficiencyLevel][] = [
+    // 明确学过/考过 → Level 2-3
+    [/我?修过[「「]?(.{2,12})[」」]?(?:课程|课)/g, 'course', 3],
+    [/我?考了|我?拿过|我?通过[了]?(.{2,16})?(?:证书|资格证|考试)/g, 'cert', 3],
+    [/我?做过|我?参加过|我?实习[过]?|我?完成[了]?(.{2,20})?(?:项目|比赛|竞赛|实习)/g, 'project', 3],
+    // 不熟练 → Level 1-2
+    [/(.{2,12})(?:不太会|不熟练|没学过|没接触过|基础差)/g, 'weak', 1],
+    // 熟练 → Level 4
+    [/(.{2,12})(?:很熟练|比较熟|经常用|一直在做|是我的强项)/g, 'strong', 4],
+    // 教别人 → Level 5
+    [/(.{2,12})(?:教[过]?|指导[过]?|带[过]?)(?:别人|同学|新人|学弟)/g, 'teach', 5],
+  ];
+
+  for (const [regex, source, level] of patterns) {
+    let match: RegExpExecArray | null;
+    // 重置 regex 的 lastIndex
+    const re = new RegExp(regex.source, regex.flags);
+    while ((match = re.exec(fullText)) !== null) {
+      const extracted = match[1]?.trim();
+      if (extracted && extracted.length >= 2) {
+        signals.push({
+          competencyId: `inferred-${source}-${extracted}`,
+          inferredLevel: level,
+          confidence: source === 'weak' || source === 'strong' || source === 'teach' ? 0.7 : 0.5,
+          source: `从对话中「${match[0]}」推断`,
+        });
+      }
+    }
+  }
+
+  return signals;
 }
