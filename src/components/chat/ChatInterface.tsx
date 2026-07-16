@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import type { ChatMessage, UserProfile } from '@/types';
 import { MessageBubble } from './MessageBubble';
 
+import { extractProfile } from '@/lib/profile-extractor';
+
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant', timestamp: new Date().toISOString(),
   content: `嗨，我是 Career Maze 的决策助手 👋\n\n我的职责不是给你答案，而是帮你**学会判断**一条路适不适合自己。\n\n我们从最简单的开始：\n\n**你现在大几？学什么专业？**`,
@@ -95,6 +97,15 @@ export function ChatInterface() {
         return updated;
       });
 
+      // 提取画像保存到 localStorage
+      const fullContent = streamingRef.current + buffer.replace('\n[DONE]', '');
+      const allMessages = [...newMessages, { role: 'assistant' as const, content: fullContent, timestamp: new Date().toISOString() }];
+      const extractedProfile = extractProfile(allMessages);
+      const merged = mergeProfile(profile, extractedProfile);
+      setProfile(merged);
+      localStorage.setItem('mingdao-profile', JSON.stringify(merged));
+      localStorage.setItem('mingdao-messages', JSON.stringify(allMessages));
+
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: '网络不稳定，请重试。', timestamp: new Date().toISOString() }]);
     }
@@ -124,4 +135,18 @@ export function ChatInterface() {
       </div>
     </div>
   );
+}
+
+function mergeProfile(old: Partial<UserProfile>, incoming: Partial<UserProfile>): Partial<UserProfile> {
+  const merged = { ...old };
+  for (const key of Object.keys(incoming) as (keyof UserProfile)[]) {
+    const newVal = incoming[key]; if (newVal === undefined || newVal === null) continue;
+    if (Array.isArray(newVal) && Array.isArray(merged[key])) {
+      const combined = [...(merged[key] as string[])];
+      for (const item of newVal as string[]) { if (!combined.includes(item)) combined.push(item); }
+      (merged as Record<string, unknown>)[key] = combined;
+    } else if (Array.isArray(newVal)) { (merged as Record<string, unknown>)[key] = [...(newVal as string[])]; }
+    else { (merged as Record<string, unknown>)[key] = newVal; }
+  }
+  return merged;
 }
