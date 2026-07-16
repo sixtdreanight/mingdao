@@ -2,14 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { ChatMessage, UserProfile } from '@/types';
 import { MessageBubble } from './MessageBubble';
-import { ProfileCard } from './ProfileCard';
-import { CompetencyCard } from './CompetencyCard';
-import type {
-  OccupationCompetencyProfile,
-  StudentCompetencyProfile,
-  SelfAssessment,
-  ProficiencyLevel,
-} from '@/types/competency';
 
 
 const WELCOME_MESSAGE: ChatMessage = {
@@ -23,82 +15,7 @@ export function ChatInterface() {
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const [competencyProfile, setCompetencyProfile] = useState<OccupationCompetencyProfile | null>(null);
-  const [studentCompetency, setStudentCompetency] = useState<StudentCompetencyProfile>({ selfAssessments: [], inferredSignals: [] });
-  const [showCompetency, setShowCompetency] = useState(false);
-  const [competencyLoading, setCompetencyLoading] = useState(false);
-  const [competencyOccupation, setCompetencyOccupation] = useState('');
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-  // localStorage key
-  const COMPETENCY_STORAGE_KEY = 'mingdao-competency';
-
-  // Restore competency data from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(COMPETENCY_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.studentCompetency) setStudentCompetency(parsed.studentCompetency);
-        if (parsed.competencyProfile) setCompetencyProfile(parsed.competencyProfile);
-        if (parsed.competencyProfile) setShowCompetency(true);
-      }
-    } catch { /* ignore parse errors */ }
-  }, []);
-
-  // Self-assessment callback
-  const handleAssess = (competencyId: string, level: ProficiencyLevel, evidence: string) => {
-    setStudentCompetency((prev) => {
-      const existing = prev.selfAssessments.findIndex((a) => a.competencyId === competencyId);
-      const assessment: SelfAssessment = {
-        competencyId,
-        currentLevel: level,
-        evidence,
-        lastUpdated: new Date().toISOString(),
-      };
-      const selfAssessments =
-        existing >= 0
-          ? prev.selfAssessments.map((a, i) => (i === existing ? assessment : a))
-          : [...prev.selfAssessments, assessment];
-      const updated = { ...prev, selfAssessments };
-      localStorage.setItem(
-        COMPETENCY_STORAGE_KEY,
-        JSON.stringify({ studentCompetency: updated, competencyProfile })
-      );
-      return updated;
-    });
-  };
-
-  // Generate competency profile
-  const handleGenerateCompetency = async () => {
-    const occupation = competencyOccupation.trim();
-    if (!occupation) return;
-    setCompetencyLoading(true);
-    try {
-      const res = await fetch('/api/competency', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ occupation }),
-      });
-      const json = await res.json();
-      if (json.success && json.data) {
-        setCompetencyProfile(json.data);
-        setStudentCompetency((prev) => {
-          const updated = { ...prev, targetCareer: occupation };
-          localStorage.setItem(
-            COMPETENCY_STORAGE_KEY,
-            JSON.stringify({ studentCompetency: updated, competencyProfile: json.data })
-          );
-          return updated;
-        });
-        setShowCompetency(true);
-      }
-    } catch {
-      // silent failure — user can retry
-    } finally {
-      setCompetencyLoading(false);
-    }
-  };
 
   const handleSend = async () => {
     const text = input.trim(); if (!text || loading) return;
@@ -106,7 +23,7 @@ export function ChatInterface() {
     const newMessages = [...messages, userMsg];
     setMessages(newMessages); setInput(''); setLoading(true);
     try {
-      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: newMessages, competencyProfile: studentCompetency }) });
+      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: newMessages }) });
       const json = await res.json();
       if (json.success && json.data) {
         setMessages(prev => [...prev, { role: 'assistant', content: json.data.reply, sources: json.data.sources, timestamp: new Date().toISOString() }]);
@@ -121,40 +38,6 @@ export function ChatInterface() {
   return (
     <div className="flex h-full flex-col bg-background">
       <div className="chat-scroll flex-1 overflow-y-auto px-5 py-6">
-        {messages.length > 1 && <div className="mb-6"><ProfileCard profile={profile} /></div>}
-        {showCompetency && competencyProfile && (
-          <div className="mb-6">
-            <CompetencyCard
-              profile={competencyProfile}
-              selfAssessments={studentCompetency.selfAssessments}
-              onAssess={handleAssess}
-              onViewResources={() => {}}
-              onRefresh={() => { setShowCompetency(false); setCompetencyProfile(null); setCompetencyOccupation(''); localStorage.removeItem('mingdao-competency'); }}
-            />
-          </div>
-        )}
-        {!showCompetency && (
-          <div className="mb-4 rounded-lg border border-dashed border-border/60 bg-card/40 px-4 py-3">
-            <p className="text-xs text-muted-foreground mb-2">想知道你离目标职业还差哪些能力？</p>
-            <div className="flex gap-2">
-              <input
-                value={competencyOccupation}
-                onChange={(e) => setCompetencyOccupation(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleGenerateCompetency(); }}
-                placeholder="输入目标职业，如：律师、产品经理..."
-                className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-xs text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
-                disabled={competencyLoading}
-              />
-              <button
-                onClick={handleGenerateCompetency}
-                disabled={competencyLoading || !competencyOccupation.trim()}
-                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-30"
-              >
-                {competencyLoading ? '生成中...' : '查看能力需求'}
-              </button>
-            </div>
-          </div>
-        )}
         {messages.map((msg, i) => (<MessageBubble key={i} message={msg} />))}
         {loading && <div className="mb-5 flex justify-start">
           <div className="max-w-[82%]"><div className="mb-1 flex items-center gap-2"><span className="text-xs font-medium uppercase tracking-wider text-primary/60">助手</span><span className="h-px flex-1 bg-border" /></div>
