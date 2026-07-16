@@ -74,4 +74,13 @@
   .hero-reveal, .hero-reveal-delay-1, .hero-reveal-delay-2 {
     animation: none; opacity: 1; filter: none; transform: none;
   }
+  .module-fade-in { animation: none; }
+}
+
+.module-fade-in {
+  animation: module-fade 150ms ease-out;
+}
+@keyframes module-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
