@@ -1,18 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type {
   OccupationCompetencyProfile,
-  Competency,
   CompetencyGap,
   CompetencyGapAnalysis,
   ProficiencyLevel,
   GapPriority,
   SelfAssessment,
 } from '@/types/competency';
-import {
-  PROFICIENCY_LABELS,
-  GAP_PRIORITY_LABELS,
-} from '@/types/competency';
+import { PROFICIENCY_LABELS } from '@/types/competency';
 
 interface CompetencyCardProps {
   profile: OccupationCompetencyProfile;
@@ -22,6 +18,8 @@ interface CompetencyCardProps {
   onRefresh: () => void;
   loading?: boolean;
 }
+
+const PROFICIENCY_LEVELS: ProficiencyLevel[] = [1, 2, 3, 4, 5];
 
 const COMPETENCY_TYPE_LABELS: Record<string, string> = {
   professional:  '📐 专业素养',
@@ -58,10 +56,12 @@ function computeGapAnalysis(
       priority: calcPriority(gap, comp.weightInOccupation),
     };
   });
-  gaps.sort((a, b) => b.gap - a.gap || b.competency.weightInOccupation - a.competency.weightInOccupation);
+  const sorted = [...gaps].sort(
+    (a, b) => b.gap - a.gap || b.competency.weightInOccupation - a.competency.weightInOccupation,
+  );
   return {
     targetOccupation: profile.occupation,
-    gaps,
+    gaps: sorted,
     generatedAt: new Date().toISOString(),
   };
 }
@@ -89,7 +89,10 @@ export function CompetencyCard({
   loading,
 }: CompetencyCardProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
-  const analysis = computeGapAnalysis(profile, selfAssessments);
+  const analysis = useMemo(
+    () => computeGapAnalysis(profile, selfAssessments),
+    [profile, selfAssessments],
+  );
 
   if (loading) {
     return (
@@ -162,6 +165,8 @@ export function CompetencyCard({
                   <button
                     onClick={() => setExpanded(expanded === gap.competency.id ? null : gap.competency.id)}
                     className="w-full text-left"
+                    aria-expanded={expanded === gap.competency.id}
+                    aria-controls={`gap-detail-${gap.competency.id}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 min-w-0">
@@ -192,7 +197,10 @@ export function CompetencyCard({
 
                   {/* 展开详情 */}
                   {expanded === gap.competency.id && (
-                    <div className="mt-2 rounded-lg bg-background border border-border/50 p-3 space-y-2">
+                    <div
+                      id={`gap-detail-${gap.competency.id}`}
+                      className="mt-2 rounded-lg bg-background border border-border/50 p-3 space-y-2"
+                    >
                       <p className="text-xs text-muted-foreground">
                         {'💡'} {gap.competency.importanceRationale}
                       </p>
@@ -207,7 +215,7 @@ export function CompetencyCard({
                       {/* 自评选择器 */}
                       <div className="flex items-center gap-1 flex-wrap">
                         <span className="text-[10px] text-muted-foreground mr-1">我的水平：</span>
-                        {([1, 2, 3, 4, 5] as ProficiencyLevel[]).map((lvl) => (
+                        {PROFICIENCY_LEVELS.map((lvl) => (
                           <button
                             key={lvl}
                             onClick={() =>
