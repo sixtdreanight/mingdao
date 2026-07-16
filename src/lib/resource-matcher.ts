@@ -1,4 +1,4 @@
-import type { Competency, CompetencyGap } from '@/types/competency';
+import type { CompetencyGap } from '@/types/competency';
 import type { ResourceLink } from '@/data/resources';
 import { RESOURCE_INDEX } from '@/data/resources';
 

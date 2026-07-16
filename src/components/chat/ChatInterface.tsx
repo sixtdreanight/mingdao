@@ -10,7 +10,7 @@ import type {
   SelfAssessment,
   ProficiencyLevel,
 } from '@/types/competency';
-import { batchMatch } from '@/lib/resource-matcher';
+
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant', timestamp: new Date().toISOString(),
@@ -100,19 +100,13 @@ export function ChatInterface() {
     }
   };
 
-  // View resources (for GapPanel)
-  const [selectedGapId, setSelectedGapId] = useState<string | null>(null);
-  const handleViewResources = (competencyId: string) => {
-    setSelectedGapId((prev) => (prev === competencyId ? null : competencyId));
-  };
-
   const handleSend = async () => {
     const text = input.trim(); if (!text || loading) return;
     const userMsg: ChatMessage = { role: 'user', content: text, timestamp: new Date().toISOString() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages); setInput(''); setLoading(true);
     try {
-      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: newMessages }) });
+      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: newMessages, competencyProfile: studentCompetency }) });
       const json = await res.json();
       if (json.success && json.data) {
         setMessages(prev => [...prev, { role: 'assistant', content: json.data.reply, sources: json.data.sources, timestamp: new Date().toISOString() }]);
@@ -134,8 +128,8 @@ export function ChatInterface() {
               profile={competencyProfile}
               selfAssessments={studentCompetency.selfAssessments}
               onAssess={handleAssess}
-              onViewResources={handleViewResources}
-              onRefresh={() => { setShowCompetency(false); setCompetencyProfile(null); setCompetencyOccupation(''); }}
+              onViewResources={() => {}}
+              onRefresh={() => { setShowCompetency(false); setCompetencyProfile(null); setCompetencyOccupation(''); localStorage.removeItem('mingdao-competency'); }}
             />
           </div>
         )}
