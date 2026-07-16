@@ -1,20 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { ChatMessage, UserProfile } from '@/types';
 import type { StudentCompetencyProfile } from '@/types/competency';
 import { buildSystemPrompt, searchRelevantAtoms } from './rag';
-
-let anthropicClient: Anthropic | null = null;
-
-function getAnthropicClient(): Anthropic {
-  if (!anthropicClient) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
-    }
-    anthropicClient = new Anthropic({ apiKey });
-  }
-  return anthropicClient;
-}
+import { chat } from './ai-client';
 
 export async function chatWithAI(
   messages: ChatMessage[],
@@ -38,11 +25,9 @@ export async function chatWithAI(
   // 构建系统提示词
   const systemPrompt = buildSystemPrompt(relevantAtoms, userProfile, competencyProfile);
 
-  const client = getAnthropicClient();
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
-    system: systemPrompt,
+  const result = await chat({
+    systemPrompt,
+    maxTokens: 2048,
     messages: messages
       .filter((m) => m.role !== 'system')
       .map((m) => ({
@@ -51,9 +36,7 @@ export async function chatWithAI(
       })),
   });
 
-  const textBlock = response.content.find((block) => block.type === 'text');
-  const reply =
-    textBlock?.text ?? '抱歉，我暂时无法回答。请稍后再试。';
+  const reply = result.text || '抱歉，我暂时无法回答。请稍后再试。';
 
   // 附带引用来源
   const sources = relevantAtoms.map((r) => r.atom);

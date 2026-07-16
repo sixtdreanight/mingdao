@@ -1,5 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk';
-import type { OccupationCompetencyProfile, Competency } from '@/types/competency';
+import type { OccupationCompetencyProfile } from '@/types/competency';
+import { chat } from './ai-client';
 
 const SYSTEM_PROMPT = `你是一位职业能力分析师。你的任务是为给定的目标职业生成一份结构化的能力画像。
 
@@ -40,24 +40,11 @@ const SYSTEM_PROMPT = `你是一位职业能力分析师。你的任务是为给
 
 只输出 JSON，不要任何解释文字。`;
 
-let client: Anthropic | null = null;
-
-function getClient(): Anthropic {
-  if (!client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
-    client = new Anthropic({ apiKey });
-  }
-  return client;
-}
-
 /** 解析 AI 返回的 JSON，容错处理 */
 function parseCompetencyJSON(raw: string): OccupationCompetencyProfile {
-  // 尝试直接解析
   try {
     return JSON.parse(raw) as OccupationCompetencyProfile;
   } catch {
-    // 尝试提取 ```json ... ``` 块
     const jsonMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[1]) as OccupationCompetencyProfile;
@@ -70,33 +57,23 @@ function parseCompetencyJSON(raw: string): OccupationCompetencyProfile {
 export async function generateCompetencyProfile(
   occupation: string
 ): Promise<OccupationCompetencyProfile> {
-  const anthropic = getClient();
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4096,
-    temperature: 0.3,  // 低温度确保结构化输出稳定
-    system: SYSTEM_PROMPT,
+  const { text } = await chat({
+    systemPrompt: SYSTEM_PROMPT,
+    maxTokens: 4096,
+    temperature: 0.3,
     messages: [
-      {
-        role: 'user',
-        content: `请为「${occupation}」生成职业能力画像。`,
-      },
+      { role: 'user', content: `请为「${occupation}」生成职业能力画像。` },
     ],
   });
 
-  const textBlock = response.content.find((b) => b.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('AI returned no text content');
-  }
+  if (!text) throw new Error('AI returned no text content');
 
-  const profile = parseCompetencyJSON(textBlock.text);
+  const profile = parseCompetencyJSON(text);
 
-  // 补充元数据
   profile.generatedBy = 'ai';
   profile.trustLevel = 'ai-inferred';
   profile.generatedAt = new Date().toISOString();
 
-  // 校验必填字段
   if (!profile.competencies || profile.competencies.length === 0) {
     throw new Error('AI generated empty competency list');
   }
@@ -104,5 +81,4 @@ export async function generateCompetencyProfile(
   return profile;
 }
 
-/** 暴露 competency 专用 system prompt，供对话中内联使用 */
 export { SYSTEM_PROMPT as COMPETENCY_SYSTEM_PROMPT };
