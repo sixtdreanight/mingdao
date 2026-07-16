@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ChatMessage, ApiResponse, UserProfile, KnowledgeAtom } from '@/types';
-import { chatWithAI } from '@/lib/ai';
+import { chatWithAI, chatWithAIStream } from '@/lib/ai';
 import { extractProfile } from '@/lib/profile-extractor';
 
-export async function POST(
-  request: NextRequest
-): Promise<
-  NextResponse<
-    ApiResponse<{ reply: string; profile: Partial<UserProfile>; sources: KnowledgeAtom[] }>
-  >
-> {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const messages: ChatMessage[] = body.messages;
     const competencyProfile = body.competencyProfile;
+    const useStream = body.stream === true;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -23,6 +18,37 @@ export async function POST(
     }
 
     const profile = extractProfile(messages);
+
+    // 流式响应
+    if (useStream) {
+      const { stream, sources } = await chatWithAIStream(messages, profile, competencyProfile);
+
+      // 将 sources 作为第一个 chunk 发送（JSON），后续 chunks 为纯文本
+      const encoder = new TextEncoder();
+      const sourceChunk = encoder.encode(JSON.stringify({ type: 'sources', sources }) + '\n');
+
+      const combined = new ReadableStream({
+        async start(controller) {
+          controller.enqueue(sourceChunk);
+          const reader = stream.getReader();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) { controller.enqueue(encoder.encode('\n[DONE]')); controller.close(); break; }
+            controller.enqueue(value);
+          }
+        },
+      });
+
+      return new NextResponse(combined, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    }
+
+    // 非流式响应（兼容旧版）
     const { reply, sources } = await chatWithAI(messages, profile, competencyProfile);
 
     return NextResponse.json({

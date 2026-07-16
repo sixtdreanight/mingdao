@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from 'react';
 import type { ChatMessage, UserProfile } from '@/types';
 import { MessageBubble } from './MessageBubble';
 
-
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant', timestamp: new Date().toISOString(),
   content: `嗨，我是 Career Maze 的决策助手 👋\n\n我的职责不是给你答案，而是帮你**学会判断**一条路适不适合自己。\n\n我们从最简单的开始：\n\n**你现在大几？学什么专业？**`,
@@ -15,6 +14,8 @@ export function ChatInterface() {
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const streamingRef = useRef<string>('');
+
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const handleSend = async () => {
@@ -22,14 +23,81 @@ export function ChatInterface() {
     const userMsg: ChatMessage = { role: 'user', content: text, timestamp: new Date().toISOString() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages); setInput(''); setLoading(true);
+
+    // 先添加一个空的 assistant 消息，用于流式填充
+    const assistantMsg: ChatMessage = { role: 'assistant', content: '', timestamp: new Date().toISOString() };
+    setMessages(prev => [...prev, assistantMsg]);
+    streamingRef.current = '';
+
     try {
-      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: newMessages }) });
-      const json = await res.json();
-      if (json.success && json.data) {
-        setMessages(prev => [...prev, { role: 'assistant', content: json.data.reply, sources: json.data.sources, timestamp: new Date().toISOString() }]);
-        if (json.data.profile) setProfile(prev => mergeProfile(prev, json.data.profile));
-      } else setMessages(prev => [...prev, { role: 'assistant', content: '抱歉，暂时无法回答。', timestamp: new Date().toISOString() }]);
-    } catch { setMessages(prev => [...prev, { role: 'assistant', content: '网络不稳定，请重试。', timestamp: new Date().toISOString() }]); }
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages, stream: true }),
+      });
+
+      if (!res.ok || !res.body) {
+        throw new Error('Stream not available');
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let sources: ChatMessage['sources'] = [];
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // 检查是否是 sources JSON chunk
+        if (buffer.startsWith('{"type":"sources"')) {
+          const nl = buffer.indexOf('\n');
+          if (nl > 0) {
+            try {
+              const meta = JSON.parse(buffer.slice(0, nl));
+              sources = meta.sources || [];
+            } catch { /* ignore */ }
+            buffer = buffer.slice(nl + 1);
+          }
+        }
+
+        // 检查 [DONE] 标记
+        const doneIdx = buffer.indexOf('\n[DONE]');
+        if (doneIdx >= 0) {
+          streamingRef.current += buffer.slice(0, doneIdx);
+          buffer = '';
+        } else {
+          // 保留最后可能不完整的 UTF-8 字符
+          streamingRef.current += buffer.slice(0, -3);
+          buffer = buffer.slice(-3);
+        }
+
+        // 更新消息
+        setMessages(prev => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last.role === 'assistant') {
+            updated[updated.length - 1] = { ...last, content: streamingRef.current, sources };
+          }
+          return updated;
+        });
+      }
+
+      // 最后确保完整内容
+      setMessages(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last.role === 'assistant') {
+          updated[updated.length - 1] = { ...last, content: streamingRef.current + buffer.replace('\n[DONE]', ''), sources };
+        }
+        return updated;
+      });
+
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: '网络不稳定，请重试。', timestamp: new Date().toISOString() }]);
+    }
     finally { setLoading(false); }
   };
 
@@ -39,7 +107,7 @@ export function ChatInterface() {
     <div className="flex h-full flex-col bg-background">
       <div className="chat-scroll flex-1 overflow-y-auto px-5 py-6">
         {messages.map((msg, i) => (<MessageBubble key={i} message={msg} />))}
-        {loading && <div className="mb-5 flex justify-start">
+        {loading && messages[messages.length - 1]?.content === '' && <div className="mb-5 flex justify-start">
           <div className="max-w-[82%]"><div className="mb-1 flex items-center gap-2"><span className="text-xs font-medium uppercase tracking-wider text-primary/60">助手</span><span className="h-px flex-1 bg-border" /></div>
           <div className="rounded-r-xl rounded-bl-md border-l-[3px] border-primary/40 bg-card px-4 py-3 shadow-sm">
             <div className="flex items-center gap-1.5"><div className="h-2 w-2 animate-bounce rounded-full bg-primary/50" /><div className="h-2 w-2 animate-bounce rounded-full bg-primary/50 [animation-delay:0.12s]" /><div className="h-2 w-2 animate-bounce rounded-full bg-primary/50 [animation-delay:0.24s]" /></div></div></div></div>}
@@ -56,18 +124,4 @@ export function ChatInterface() {
       </div>
     </div>
   );
-}
-
-function mergeProfile(old: Partial<UserProfile>, incoming: Partial<UserProfile>): Partial<UserProfile> {
-  const merged = { ...old };
-  for (const key of Object.keys(incoming) as (keyof UserProfile)[]) {
-    const newVal = incoming[key]; if (newVal === undefined || newVal === null) continue;
-    if (Array.isArray(newVal) && Array.isArray(merged[key])) {
-      const combined = [...(merged[key] as string[])];
-      for (const item of newVal as string[]) { if (!combined.includes(item)) combined.push(item); }
-      (merged as Record<string, unknown>)[key] = combined;
-    } else if (Array.isArray(newVal)) { (merged as Record<string, unknown>)[key] = [...(newVal as string[])]; }
-    else { (merged as Record<string, unknown>)[key] = newVal; }
-  }
-  return merged;
 }

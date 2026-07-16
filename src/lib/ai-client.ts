@@ -1,9 +1,5 @@
 /**
  * 统一 AI 客户端 — 支持 DeepSeek（OpenAI 兼容）和 Anthropic。
- *
- * 通过 DEEPSEEK_API_KEY 环境变量切换：
- * - 设置了 DEEPSEEK_API_KEY → 使用 DeepSeek
- * - 未设置 → 回退到 Anthropic
  */
 
 import Anthropic from '@anthropic-ai/sdk';
@@ -27,14 +23,7 @@ interface ChatResult {
   text: string;
 }
 
-/** DeepSeek OpenAI-compatible chat */
-async function chatDeepSeek(opts: ChatOptions): Promise<ChatResult> {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not configured');
-
-  const baseUrl = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
-  const model = opts.model || 'deepseek-chat';
-
+function buildDeepSeekMessages(opts: ChatOptions): { role: string; content: string }[] {
   const messages: { role: string; content: string }[] = [];
   if (opts.systemPrompt) {
     messages.push({ role: 'system', content: opts.systemPrompt });
@@ -42,6 +31,16 @@ async function chatDeepSeek(opts: ChatOptions): Promise<ChatResult> {
   for (const m of opts.messages) {
     messages.push({ role: m.role, content: m.content });
   }
+  return messages;
+}
+
+/** DeepSeek 非流式 */
+async function chatDeepSeek(opts: ChatOptions): Promise<ChatResult> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not configured');
+
+  const baseUrl = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
+  const model = opts.model || 'deepseek-chat';
 
   const response = await fetch(`${baseUrl}/v1/chat/completions`, {
     method: 'POST',
@@ -51,7 +50,7 @@ async function chatDeepSeek(opts: ChatOptions): Promise<ChatResult> {
     },
     body: JSON.stringify({
       model,
-      messages,
+      messages: buildDeepSeekMessages(opts),
       max_tokens: opts.maxTokens ?? 2048,
       temperature: opts.temperature ?? 0.7,
     }),
@@ -68,7 +67,85 @@ async function chatDeepSeek(opts: ChatOptions): Promise<ChatResult> {
   return { text };
 }
 
-/** Anthropic chat */
+/** DeepSeek 流式 — 返回 ReadableStream<Uint8Array> */
+function streamDeepSeek(opts: ChatOptions): ReadableStream<Uint8Array> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not configured');
+
+  const baseUrl = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
+  const model = opts.model || 'deepseek-chat';
+
+  const encoder = new TextEncoder();
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: buildDeepSeekMessages(opts),
+            max_tokens: opts.maxTokens ?? 2048,
+            temperature: opts.temperature ?? 0.7,
+            stream: true,
+          }),
+        });
+
+        if (!response.ok) {
+          const err = await response.text();
+          controller.error(new Error(`DeepSeek API error ${response.status}: ${err}`));
+          return;
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          controller.error(new Error('No response body'));
+          return;
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data: ')) continue;
+            const data = trimmed.slice(6);
+            if (data === '[DONE]') {
+              controller.close();
+              return;
+            }
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) {
+                controller.enqueue(encoder.encode(delta));
+              }
+            } catch {
+              // skip unparseable chunks
+            }
+          }
+        }
+        controller.close();
+      } catch (err) {
+        controller.error(err);
+      }
+    },
+  });
+}
+
+/** Anthropic */
 let anthropicClient: Anthropic | null = null;
 function getAnthropic(): Anthropic {
   if (!anthropicClient) {
@@ -81,35 +158,65 @@ function getAnthropic(): Anthropic {
 
 async function chatAnthropic(opts: ChatOptions): Promise<ChatResult> {
   const client = getAnthropic();
-  const model = opts.model || 'claude-sonnet-4-20250514';
-
   const response = await client.messages.create({
-    model,
+    model: opts.model || 'claude-sonnet-4-20250514',
     max_tokens: opts.maxTokens ?? 2048,
     temperature: opts.temperature,
     system: opts.systemPrompt,
     messages: opts.messages
       .filter((m) => m.role !== 'system')
-      .map((m) => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-      })),
+      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
   });
-
   const textBlock = response.content.find((b) => b.type === 'text');
-  const text = textBlock?.text ?? '';
-  return { text };
+  return { text: textBlock?.text ?? '' };
 }
 
-/** 自动选择 provider */
-export async function chat(opts: ChatOptions): Promise<ChatResult> {
-  if (process.env.DEEPSEEK_API_KEY) {
-    return chatDeepSeek(opts);
+/** Anthropic 流式 */
+async function* streamAnthropic(opts: ChatOptions): AsyncGenerator<string> {
+  const client = getAnthropic();
+  const stream = client.messages.stream({
+    model: opts.model || 'claude-sonnet-4-20250514',
+    max_tokens: opts.maxTokens ?? 2048,
+    temperature: opts.temperature,
+    system: opts.systemPrompt,
+    messages: opts.messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+  });
+
+  for await (const event of stream) {
+    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+      yield event.delta.text;
+    }
   }
+}
+
+/** 非流式 */
+export async function chat(opts: ChatOptions): Promise<ChatResult> {
+  if (process.env.DEEPSEEK_API_KEY) return chatDeepSeek(opts);
   return chatAnthropic(opts);
 }
 
-/** 检查当前使用的 provider */
+/** 流式 — 返回 ReadableStream */
+export function chatStream(opts: ChatOptions): ReadableStream<Uint8Array> {
+  if (process.env.DEEPSEEK_API_KEY) return streamDeepSeek(opts);
+
+  // Anthropic: convert async generator to ReadableStream
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const chunk of streamAnthropic(opts)) {
+          controller.enqueue(encoder.encode(chunk));
+        }
+        controller.close();
+      } catch (err) {
+        controller.error(err);
+      }
+    },
+  });
+}
+
 export function currentProvider(): 'deepseek' | 'anthropic' {
   return process.env.DEEPSEEK_API_KEY ? 'deepseek' : 'anthropic';
 }
