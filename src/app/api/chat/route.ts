@@ -36,9 +36,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error: message.includes('ANTHROPIC_API_KEY')
-          ? 'AI 服务未配置，请联系管理员'
-          : 'AI 服务暂时不可用，请稍后再试',
+        error: `[${message}] — ${message.includes('ANTHROPIC_API_KEY') || message.includes('not configured') ? 'AI 服务未配置' : 'AI 调用失败'}`,
       },
       { status: 500 }
     );
