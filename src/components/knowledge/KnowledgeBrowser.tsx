@@ -2,7 +2,50 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { KnowledgeAtom } from '@/types';
-import { ExternalLink, Search, Filter } from 'lucide-react';
+import { ExternalLink, Search } from 'lucide-react';
+
+function DataDisplay({ data }: { data: Record<string, unknown> }) {
+  if (Array.isArray(data)) {
+    return (
+      <div className="mb-2 space-y-1">
+        {data.map((item, i) => {
+          if (typeof item === 'object' && item) {
+            const obj = item as Record<string, unknown>;
+            return (
+              <div key={i} className="rounded-lg bg-secondary/40 px-3 py-1.5 text-xs">
+                {Object.entries(obj).filter(([k]) => k !== 'source').map(([k, v]) => (
+                  <span key={k} className="mr-3">
+                    <span className="text-muted-foreground">{k}: </span>
+                    <span className="font-medium text-foreground">{typeof v === 'number' ? v.toLocaleString() : String(v)}</span>
+                  </span>
+                ))}
+              </div>
+            );
+          }
+          return <span key={i} className="text-xs text-muted-foreground">{String(item)}</span>;
+        })}
+      </div>
+    );
+  }
+
+  if (typeof data === 'object') {
+    return (
+      <div className="mb-2 rounded-lg bg-secondary/40 px-3 py-2 text-xs space-y-0.5">
+        {Object.entries(data).filter(([k]) => !['source', 'year'].includes(k)).map(([k, v]) => {
+          if (typeof v === 'object') return <DataDisplay key={k} data={v as Record<string, unknown>} />;
+          return (
+            <div key={k} className="flex justify-between">
+              <span className="text-muted-foreground">{k}</span>
+              <span className="font-medium text-foreground">{typeof v === 'number' ? v.toLocaleString() : String(v)}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return <span className="text-xs text-muted-foreground">{String(data)}</span>;
+}
 
 const CAT_LABELS: Record<string, { label: string; icon: string }> = {
   salary: { label: '薪资数据', icon: '💰' },
@@ -108,9 +151,7 @@ export function KnowledgeBrowser() {
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground mb-2">{atom.content}</p>
               {atom.data && Object.keys(atom.data).length > 2 && (
-                <pre className="mb-2 rounded-lg bg-secondary/50 px-3 py-2 text-[11px] text-muted-foreground overflow-x-auto">
-                  {JSON.stringify(atom.data, null, 2)}
-                </pre>
+                <DataDisplay data={atom.data} />
               )}
               <div className="flex items-center gap-2 flex-wrap">
                 {atom.tags.map(t => (

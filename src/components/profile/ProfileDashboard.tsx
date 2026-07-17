@@ -117,8 +117,8 @@ export function ProfileDashboard() {
             className="flex w-full items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10">
             <Brain className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-sm font-medium text-foreground">MBTI 性格测评</p>
-              <p className="text-xs text-muted-foreground">16 题 · 了解你的性格类型与推荐职业</p>
+              <p className="text-sm font-medium text-foreground">Big Five 人格测评</p>
+              <p className="text-xs text-muted-foreground">50 题 · 科学人格模型，了解你的性格与职业匹配</p>
             </div>
           </button>
           <button onClick={() => setActiveTest('career')}
