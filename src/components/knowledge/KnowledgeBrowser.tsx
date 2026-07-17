@@ -28,7 +28,18 @@ export function KnowledgeBrowser() {
   const [atoms, setAtoms] = useState<KnowledgeAtom[]>([]);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'default' | 'newest'>('default');
+  const [bookmarks, setBookmarks] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('mingdao-bookmarks') || '[]')); } catch { return new Set(); }
+  });
   const [loading, setLoading] = useState(true);
+
+  const toggleBookmark = (id: string) => {
+    const next = new Set(bookmarks);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setBookmarks(next);
+    localStorage.setItem('mingdao-bookmarks', JSON.stringify([...next]));
+  };
 
   useEffect(() => {
     Promise.all(QUERIES.map(q => searchAtoms(q.kw, q.cats, 5)))
@@ -39,12 +50,18 @@ export function KnowledgeBrowser() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = useMemo(() => atoms.filter(a => {
-    if (catFilter && a.category !== catFilter) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q) || a.tags.some(t => t.toLowerCase().includes(q));
-  }), [atoms, search, catFilter]);
+  const filtered = useMemo(() => {
+    let result = atoms.filter(a => {
+      if (catFilter && a.category !== catFilter) return false;
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q) || a.tags.some(t => t.toLowerCase().includes(q));
+    });
+    // Sort: bookmarked first, then by date if newest
+    if (sortBy === 'newest') result = [...result].sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated));
+    result = [...result].sort((a, b) => (bookmarks.has(b.id) ? 1 : 0) - (bookmarks.has(a.id) ? 1 : 0));
+    return result;
+  }, [atoms, search, catFilter, sortBy, bookmarks]);
 
   if (loading) return (
     <div className="flex items-center justify-center h-full">
@@ -70,6 +87,10 @@ export function KnowledgeBrowser() {
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索薪资、城市、专业..." className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40" />
           </div>
           <div className="flex gap-1.5">
+            <button onClick={() => setSortBy(s => s === 'default' ? 'newest' : 'default')}
+              className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${sortBy === 'newest' ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+              {sortBy === 'newest' ? '🕐 最新' : '📌 默认'}
+            </button>
             {['salary','cost','employment','education'].map(c => (
               <button key={c} onClick={() => setCatFilter(c === catFilter ? null : c)}
                 className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${c === catFilter ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
@@ -96,6 +117,10 @@ export function KnowledgeBrowser() {
                     {atom.trustLevel === 'official' && (
                       <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">官方数据</span>
                     )}
+                    <button onClick={(e) => { e.stopPropagation(); toggleBookmark(atom.id); }}
+                      className={`ml-auto rounded-lg px-2 py-1 text-xs transition-colors ${bookmarks.has(atom.id) ? 'bg-amber-100 text-amber-700' : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:bg-secondary'}`}>
+                      {bookmarks.has(atom.id) ? '★ 已收藏' : '☆ 收藏'}
+                    </button>
                   </div>
                   <p className="text-sm leading-relaxed text-muted-foreground">{atom.content}</p>
                 </div>

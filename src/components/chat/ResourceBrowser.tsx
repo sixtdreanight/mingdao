@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search, ExternalLink, X } from 'lucide-react';
+import { Search, ExternalLink, X, Bookmark } from 'lucide-react';
 import { RESOURCE_INDEX, type ResourceCategory, type ResourceLink } from '@/data/resources';
 
 // Category icons using lucide names
@@ -22,6 +22,16 @@ const CAT_ICONS: Record<string, string> = {
 export function ResourceBrowser() {
   const [search, setSearch] = useState('');
   const [selectedCats, setSelectedCats] = useState<Set<string>>(new Set());
+  const [saved, setSaved] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('mingdao-resource-bookmarks') || '[]')); } catch { return new Set(); }
+  });
+
+  const toggleSaved = (url: string) => {
+    const next = new Set(saved);
+    if (next.has(url)) next.delete(url); else next.add(url);
+    setSaved(next);
+    localStorage.setItem('mingdao-resource-bookmarks', JSON.stringify([...next]));
+  };
 
   const toggleCat = (id: string) => {
     setSelectedCats(prev => {
@@ -117,7 +127,7 @@ export function ResourceBrowser() {
                   )}
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {cat.links.map(link => (
-                      <ResourceCard key={link.name} link={link} />
+                      <ResourceCard key={link.name} link={link} saved={saved.has(link.url)} onToggle={() => toggleSaved(link.url)} />
                     ))}
                   </div>
                 </section>
@@ -130,21 +140,20 @@ export function ResourceBrowser() {
   );
 }
 
-function ResourceCard({ link }: { link: ResourceLink }) {
+function ResourceCard({ link, saved, onToggle }: { link: ResourceLink; saved: boolean; onToggle: () => void }) {
   return (
-    <a
-      href={link.url} target="_blank" rel="noopener noreferrer"
-      className="group flex flex-col rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-sm font-medium text-foreground group-hover:text-primary">
-          {link.name}
-        </span>
-        <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 group-hover:text-primary" />
-      </div>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        {link.description}
-      </p>
-    </a>
+    <div className="group relative flex flex-col rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm">
+      <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <span className="text-sm font-medium text-foreground group-hover:text-primary">{link.name}</span>
+          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 group-hover:text-primary" />
+        </div>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{link.description}</p>
+      </a>
+      <button onClick={(e) => { e.preventDefault(); onToggle(); }}
+        className={`mt-2 flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${saved ? 'bg-amber-50 text-amber-700' : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:bg-secondary'}`}>
+        <Bookmark className={`h-3 w-3 ${saved ? 'fill-amber-400' : ''}`} /> {saved ? '已收藏' : '收藏'}
+      </button>
+    </div>
   );
 }
