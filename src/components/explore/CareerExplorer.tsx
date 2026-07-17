@@ -24,6 +24,19 @@ const CAREERS: Career[] = [
   { title:'新媒体运营', industry:'传媒/互联网', salaryRange:[8000,20000], education:'本科及以上', experience:'0-3年', outlook:'rising', cities:['北京','上海','杭州','广州'], tags:['内容','互联网','创意'], desc:'短视频+直播赛道持续扩大，内容能力和数据分析并重' },
   { title:'心理咨询师', industry:'健康/教育', salaryRange:[8000,25000], education:'硕士+执业资格', experience:'2-5年', outlook:'rising', cities:['北京','上海','深圳','成都'], tags:['健康','成长','专业'], desc:'年轻人心理健康意识提升，需求快速增长但执业门槛不低' },
   { title:'机械工程师', industry:'制造/汽车', salaryRange:[10000,25000], education:'本科及以上', experience:'0-5年', outlook:'rising', cities:['上海','深圳','苏州','重庆'], tags:['制造','技术','绿牌'], desc:'智能制造+新能源汽车推动需求，绿牌专业之一' },
+  { title:'兽医', industry:'农业/宠物', salaryRange:[8000,25000], education:'本科+执业兽医资格', experience:'1-5年', outlook:'rising', cities:['北京','上海','广州','成都'], tags:['宠物','医疗','增长'], desc:'宠物经济爆发式增长，宠物医院连锁扩张带来巨大人才缺口' },
+  { title:'翻译/同声传译', industry:'语言服务', salaryRange:[10000,35000], education:'硕士优先+CATTI', experience:'2-5年', outlook:'stable', cities:['北京','上海','广州','深圳'], tags:['语言','专业','门槛高'], desc:'AI翻译冲击初级岗位，但高端口译/专业领域翻译需求稳定' },
+  { title:'博物馆策展人', industry:'文化艺术', salaryRange:[8000,18000], education:'硕士及以上', experience:'3-8年', outlook:'stable', cities:['北京','上海','西安','南京'], tags:['文化','学术','稳定'], desc:'文博事业持续发展，虽然薪资不高但职业稳定性和文化价值感强' },
+  { title:'环境工程师', industry:'环保/能源', salaryRange:[10000,22000], education:'本科及以上', experience:'1-5年', outlook:'rising', cities:['北京','上海','深圳','杭州'], tags:['环保','绿色','增长'], desc:'碳中和目标驱动，环保产业投资增加带来新岗位' },
+  { title:'食品科学与工程', industry:'食品/快消', salaryRange:[8000,20000], education:'本科及以上', experience:'0-5年', outlook:'stable', cities:['上海','广州','天津','青岛'], tags:['食品','消费品','稳定'], desc:'民以食为天，食品研发/质检/供应链需求稳定，受经济波动影响小' },
+  { title:'特殊教育教师', industry:'教育', salaryRange:[6000,15000], education:'本科+教师资格', experience:'0-3年', outlook:'rising', cities:['北京','上海','广州','成都'], tags:['教育','公益','社会价值'], desc:'国家对特殊教育投入持续增加，人才缺口大、社会意义深远' },
+  { title:'护理学/护士', industry:'医疗健康', salaryRange:[7000,18000], education:'本科+护士执业证', experience:'0-5年', outlook:'rising', cities:['北京','上海','广州','成都'], tags:['医疗','刚需','稳定'], desc:'老龄化社会推动护理需求上升，男护士尤其紧缺' },
+  { title:'社会工作者', industry:'社会服务/NGO', salaryRange:[6000,15000], education:'本科+社工证', experience:'0-3年', outlook:'rising', cities:['北京','上海','深圳','广州'], tags:['公益','社会','意义'], desc:'社会治理现代化推动社工职业化，政府购买服务增加岗位' },
+  { title:'农林经济管理', industry:'农业/政府', salaryRange:[7000,18000], education:'本科及以上', experience:'1-5年', outlook:'stable', cities:['北京','南京','武汉','成都'], tags:['农业','政策','稳定'], desc:'乡村振兴战略持续推进，农业管理和技术人才需求稳定' },
+  { title:'航海技术/轮机工程', industry:'航运/物流', salaryRange:[15000,40000], education:'本科+船员证书', experience:'0-5年', outlook:'stable', cities:['上海','大连','青岛','厦门'], tags:['航运','高薪','特殊'], desc:'高薪但需长期海上作业，适合愿意吃苦换取高收入的毕业生' },
+  { title:'珠宝鉴定/设计', industry:'奢侈品/零售', salaryRange:[8000,30000], education:'本科+鉴定证书', experience:'2-5年', outlook:'stable', cities:['北京','上海','深圳','香港'], tags:['设计','奢侈品','专业'], desc:'中国奢侈品市场持续增长，珠宝鉴定师和设计师需求稳定' },
+  { title:'体育教练/康复师', industry:'体育/健康', salaryRange:[7000,25000], education:'本科+专业认证', experience:'1-5年', outlook:'rising', cities:['北京','上海','广州','深圳'], tags:['体育','健康','增长'], desc:'全民健身热潮+运动康复需求增长，体育产业人才缺口扩大' },
+  { title:'殡葬服务管理', industry:'社会服务', salaryRange:[8000,20000], education:'专科/本科', experience:'0-3年', outlook:'stable', cities:['北京','上海','广州','武汉'], tags:['特殊','刚需','稳定'], desc:'老龄化推动殡葬需求增长，专业人才稀缺导致薪资较高' },
 ];
 
 const INDUSTRIES = [...new Set(CAREERS.map(c => c.industry))];
