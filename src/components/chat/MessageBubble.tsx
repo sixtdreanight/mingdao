@@ -1,34 +1,36 @@
-import type { ChatMessage, KnowledgeAtom } from '@/types';
+import type { ChatMessage, KnowledgeAtom, WebSource, ChatSource } from '@/types';
 
 interface MessageBubbleProps { message: ChatMessage }
 
-function SourceLink({ atom }: { atom: KnowledgeAtom }) {
-  const hasUrl = atom.sourceUrl && atom.sourceUrl.startsWith('http');
-  const trustBadge = atom.trustLevel === 'official'
-    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-    : atom.trustLevel === 'ai-inferred'
-    ? 'bg-amber-50 text-amber-700 border-amber-200'
-    : 'bg-slate-50 text-slate-600 border-slate-200';
+function isKnowledgeAtom(s: ChatSource): s is KnowledgeAtom {
+  return 'category' in s;
+}
 
-  if (hasUrl) {
-    return (
-      <a
-        href={atom.sourceUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-md border border-border/40 bg-background px-2 py-1 text-xs text-primary transition-colors hover:bg-secondary"
-      >
-        <span className="truncate">{atom.title}</span>
-        <span className={`shrink-0 rounded border px-1 py-px text-[9px] font-medium ${trustBadge}`}>
-          {atom.trustLevel === 'official' ? '官方' : atom.trustLevel === 'ai-inferred' ? 'AI推断' : '社区'}
-        </span>
-        <span className="shrink-0 text-muted-foreground">↗</span>
-      </a>
-    );
+function getSourceInfo(s: ChatSource): { title: string; url: string; badge: string; badgeClass: string } {
+  if (isKnowledgeAtom(s)) {
+    const badge = s.trustLevel === 'official' ? '官方' : s.trustLevel === 'ai-inferred' ? 'AI推断' : '社区';
+    const badgeClass = s.trustLevel === 'official'
+      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      : s.trustLevel === 'ai-inferred'
+        ? 'bg-amber-50 text-amber-700 border-amber-200'
+        : 'bg-slate-50 text-slate-600 border-slate-200';
+    return { title: s.title, url: s.sourceUrl, badge, badgeClass };
   }
+  return { title: s.title, url: s.url, badge: '搜索', badgeClass: 'bg-blue-50 text-blue-700 border-blue-200' };
+}
 
-  // 无真实链接的来源 — 不显示
-  return null;
+function SourceLink({ source }: { source: ChatSource }) {
+  const { title, url, badge, badgeClass } = getSourceInfo(source);
+  if (!url?.startsWith('http')) return null;
+
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer"
+      className="flex items-center gap-1.5 rounded-md border border-border/40 bg-background px-2 py-1 text-xs text-primary transition-colors hover:bg-secondary">
+      <span className="truncate">{title}</span>
+      <span className={`shrink-0 rounded border px-1 py-px text-[9px] font-medium ${badgeClass}`}>{badge}</span>
+      <span className="shrink-0 text-muted-foreground">↗</span>
+    </a>
+  );
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
@@ -37,8 +39,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
     .replace(/\n/g, '<br/>');
 
-  // 只展示有真实链接的来源
-  const realSources = (message.sources || []).filter(s => s.sourceUrl && s.sourceUrl.startsWith('http'));
+  const realSources = (message.sources || []).filter(s => {
+    const url = isKnowledgeAtom(s) ? s.sourceUrl : s.url;
+    return url && url.startsWith('http');
+  });
 
   return (
     <div className={`mb-5 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -58,8 +62,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               <div className="mt-3 border-t border-border pt-2">
                 <span className="text-xs text-muted-foreground">参考来源</span>
                 <div className="mt-1.5 space-y-1">
-                  {realSources.slice(0, 5).map(s => (
-                    <SourceLink key={s.id} atom={s} />
+                  {realSources.slice(0, 5).map((s, i) => (
+                    <SourceLink key={isKnowledgeAtom(s) ? s.id : s.url} source={s} />
                   ))}
                 </div>
               </div>

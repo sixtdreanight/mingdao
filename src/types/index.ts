@@ -41,11 +41,20 @@ export interface UserProfile {
   }[];
 }
 
+/** 实时搜索来源 */
+export interface WebSource {
+  title: string;
+  url: string;
+  snippet: string;
+}
+
+export type ChatSource = KnowledgeAtom | WebSource;
+
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
-  /** AI 回复时附带的知识来源（可追溯） */
-  sources?: KnowledgeAtom[];
+  /** AI 回复时附带的来源（知识库 + 实时搜索） */
+  sources?: ChatSource[];
   timestamp: string;
 }
 

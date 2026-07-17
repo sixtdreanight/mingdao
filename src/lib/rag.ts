@@ -1,10 +1,17 @@
 import type { KnowledgeAtom, UserProfile } from '@/types';
 import type { StudentCompetencyProfile } from '@/types/competency';
 import { searchAtoms } from '@/data/knowledge';
+import { searchWeb } from './web-search';
 
 interface RagResult {
   atom: KnowledgeAtom;
   relevance: number;
+}
+
+interface WebResult {
+  title: string;
+  snippet: string;
+  url: string;
 }
 
 /**
@@ -118,7 +125,8 @@ function extractKeywords(
 export function buildSystemPrompt(
   relevantAtoms: RagResult[],
   profile?: Partial<UserProfile>,
-  competencyProfile?: StudentCompetencyProfile
+  competencyProfile?: StudentCompetencyProfile,
+  webResults: { title: string; snippet: string; url: string }[] = []
 ): string {
   // 按类别分组展示检索到的原子事实
   const categoryLabels: Record<string, string> = {
@@ -148,6 +156,16 @@ export function buildSystemPrompt(
         atomsSection += `  数据: ${JSON.stringify(r.atom.data)}\n`;
       }
     }
+  }
+
+  // 实时搜索数据（优先级高于知识库）
+  let webSection = '';
+  if (webResults && webResults.length > 0) {
+    webSection = '\n## 🔍 实时搜索数据（优先参考）\n';
+    for (const r of webResults.slice(0, 8)) {
+      webSection += `- **[${r.title}](${r.url})**\n  ${r.snippet}\n`;
+    }
+    webSection += '\n优先使用实时搜索数据。每条关键数据必须引用来源链接。\n';
   }
 
   // 用户画像
@@ -225,7 +243,7 @@ export function buildSystemPrompt(
 
 ## 知识库数据
 
-${atomsSection || '（数据不足，诚实告知学生哪些信息无法验证）'}
+${webSection}${atomsSection || '（数据不足，诚实告知学生哪些信息无法验证）'}
 
 ${profileSection}${competencySection}`;
 }
