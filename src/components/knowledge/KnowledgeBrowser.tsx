@@ -25,11 +25,8 @@ export function KnowledgeBrowser() {
     const load = async () => {
       try {
         const modules = await Promise.all([
+          import('@/data/knowledge/salary/salary-overview-2025'),
           import('@/data/knowledge/salary/salary-overview-2024'),
-          import('@/data/knowledge/salary/shanghai-cs-bachelor-foreign-2024'),
-          import('@/data/knowledge/salary/shanghai-cs-master-bigtech-2024'),
-          import('@/data/knowledge/salary/shanghai-cs-bachelor-3y-2024'),
-          import('@/data/knowledge/salary/beijing-cs-bachelor-bigtech-2024'),
           import('@/data/knowledge/cost/city-living-cost-2024'),
           import('@/data/knowledge/cost/shanghai-living-cost-2024'),
           import('@/data/knowledge/cost/beijing-living-cost-2024'),
