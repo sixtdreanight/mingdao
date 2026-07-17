@@ -24,8 +24,11 @@ export function AppSidebar({ onOpenHistory }: { onOpenHistory: () => void }) {
   const params = useSearchParams();
   const activeTab = params.get('tab') || 'coach';
   const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem('mingdao-sidebar-collapsed') === 'true'; }
-    catch { return false; }
+    try {
+      const saved = localStorage.getItem('mingdao-sidebar-collapsed');
+      if (saved !== null) return saved === 'true';
+      return window.innerWidth < 768; // 移动端默认折叠
+    } catch { return false; }
   });
 
   const toggleCollapse = () => {
