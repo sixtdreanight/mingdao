@@ -7,7 +7,10 @@ import { CompetencyCard } from '@/components/chat/CompetencyCard';
 import type { OccupationCompetencyProfile, StudentCompetencyProfile, SelfAssessment, ProficiencyLevel } from '@/types/competency';
 import { batchMatch } from '@/lib/resource-matcher';
 import { CareerTest } from './CareerTest';
-import { Beaker } from 'lucide-react';
+import { PersonalityTest } from './PersonalityTest';
+import { Beaker, Brain } from 'lucide-react';
+
+type TestType = 'career' | 'mbti' | null;
 
 export function ProfileDashboard() {
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
@@ -17,7 +20,7 @@ export function ProfileDashboard() {
   const [competencyLoading, setCompetencyLoading] = useState(false);
   const [competencyOccupation, setCompetencyOccupation] = useState('');
   const [activityCount, setActivityCount] = useState(0);
-  const [showTest, setShowTest] = useState(false);
+  const [activeTest, setActiveTest] = useState<TestType>(null);
 
   useEffect(() => {
     const load = () => {
@@ -82,7 +85,7 @@ export function ProfileDashboard() {
       <h2 className="mb-6 text-lg font-semibold tracking-tight text-foreground">个人画像</h2>
 
       {/* 测评工具 */}
-      {showTest ? (
+      {activeTest === 'career' && (
         <CareerTest
           onComplete={(result) => {
             const updated = {
@@ -92,21 +95,41 @@ export function ProfileDashboard() {
             };
             setProfile(updated);
             localStorage.setItem('mingdao-profile', JSON.stringify(updated));
-            setShowTest(false);
+            setActiveTest(null);
           }}
-          onClose={() => setShowTest(false)}
+          onClose={() => setActiveTest(null)}
         />
-      ) : (
-        <button
-          onClick={() => setShowTest(true)}
-          className="mb-6 flex w-full items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10"
-        >
-          <Beaker className="h-5 w-5 text-primary" />
-          <div>
-            <p className="text-sm font-medium text-foreground">职业兴趣测评</p>
-            <p className="text-xs text-muted-foreground">Holland 六型 + 职业价值观，帮你更了解自己</p>
-          </div>
-        </button>
+      )}
+      {activeTest === 'mbti' && (
+        <PersonalityTest
+          onComplete={(mbti) => {
+            const updated = { ...profile, lifestyle: [...new Set([...(profile.lifestyle || []), `MBTI:${mbti}`])] };
+            setProfile(updated);
+            localStorage.setItem('mingdao-profile', JSON.stringify(updated));
+            setActiveTest(null);
+          }}
+          onClose={() => setActiveTest(null)}
+        />
+      )}
+      {!activeTest && (
+        <div className="mb-6 space-y-2">
+          <button onClick={() => setActiveTest('mbti')}
+            className="flex w-full items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10">
+            <Brain className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm font-medium text-foreground">MBTI 性格测评</p>
+              <p className="text-xs text-muted-foreground">16 题 · 了解你的性格类型与推荐职业</p>
+            </div>
+          </button>
+          <button onClick={() => setActiveTest('career')}
+            className="flex w-full items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10">
+            <Beaker className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm font-medium text-foreground">职业兴趣测评</p>
+              <p className="text-xs text-muted-foreground">Holland 六型 + 职业价值观，帮你找到适合的方向</p>
+            </div>
+          </button>
+        </div>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

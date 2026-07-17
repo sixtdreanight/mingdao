@@ -5,15 +5,7 @@ import { ChatInterface } from '@/components/chat/ChatInterface';
 import { ResourceBrowser } from '@/components/chat/ResourceBrowser';
 import { ProfileDashboard } from '@/components/profile/ProfileDashboard';
 import { RouteBoard } from '@/components/routes/RouteBoard';
-
-function KnowledgeView() {
-  return (
-    <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <p className="text-sm text-muted-foreground">数据库模块即将上线</p>
-      <p className="mt-1 text-xs text-muted-foreground/60">浏览各维度的职业数据</p>
-    </div>
-  );
-}
+import { KnowledgeBrowser } from '@/components/knowledge/KnowledgeBrowser';
 
 /**
  * 所有模块同时挂载，通过 display 切换，避免切换时丢失状态。
@@ -31,7 +23,7 @@ export function ContentRouter() {
         <ProfileDashboard />
       </div>
       <div className={tab === 'knowledge' ? 'h-full' : 'hidden'}>
-        <KnowledgeView />
+        <KnowledgeBrowser />
       </div>
       <div className={tab === 'resources' ? 'h-full' : 'hidden'}>
         <ResourceBrowser />
