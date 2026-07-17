@@ -40,22 +40,43 @@ const SALARIES: SalaryEntry[] = [
   {name:'音乐表演',salary:5620,field:'艺术学'},{name:'舞蹈表演',salary:5450,field:'艺术学'},{name:'戏剧影视文学',salary:5750,field:'艺术学'},{name:'广播电视编导',salary:5920,field:'艺术学'},{name:'播音与主持艺术',salary:5880,field:'艺术学'},{name:'动画',salary:6250,field:'艺术学'},{name:'美术学',salary:5550,field:'艺术学'},{name:'视觉传达设计',salary:6180,field:'艺术学'},{name:'环境设计',salary:5920,field:'艺术学'},{name:'产品设计',salary:6080,field:'艺术学'},{name:'数字媒体艺术',salary:6480,field:'艺术学'},
 ];
 
-// 城市生活成本
+// 城市生活成本 — 全部省会 + 重点城市
 const CITIES: CityCost[] = [
+  // 直辖市
   {name:'上海',monthly:4394,housingPct:33.9,income:88366},{name:'北京',monthly:4146,housingPct:38.7,income:85415},
+  {name:'天津',monthly:2610,housingPct:24.3,income:53000},{name:'重庆',monthly:2288,housingPct:19.1,income:37000},
+  // 华东
   {name:'杭州',monthly:3248,housingPct:27.8,income:67013},{name:'南京',monthly:2737,housingPct:29.1,income:58000},
+  {name:'苏州',monthly:2737,housingPct:29.1,income:58000},{name:'宁波',monthly:2737,housingPct:27.8,income:55000},
+  {name:'合肥',monthly:1878,housingPct:22.3,income:35000},{name:'福州',monthly:2503,housingPct:29.4,income:48000},
+  {name:'厦门',monthly:2503,housingPct:29.4,income:48000},{name:'南昌',monthly:1809,housingPct:24.4,income:34000},
+  {name:'济南',monthly:1887,housingPct:21.4,income:39000},{name:'青岛',monthly:1887,housingPct:21.4,income:39000},
+  // 华南
   {name:'广州',monthly:2681,housingPct:27.4,income:55000},{name:'深圳',monthly:2681,housingPct:27.4,income:65000},
+  {name:'东莞',monthly:2681,housingPct:27.4,income:50000},{name:'佛山',monthly:2681,housingPct:27.4,income:48000},
+  {name:'南宁',monthly:1529,housingPct:24.2,income:28000},{name:'海口',monthly:1792,housingPct:27.3,income:33000},
+  // 华中
   {name:'武汉',monthly:2069,housingPct:22.2,income:44000},{name:'长沙',monthly:2007,housingPct:21.2,income:43000},
-  {name:'成都',monthly:1858,housingPct:19.9,income:42000},{name:'西安',monthly:1654,housingPct:25.5,income:38000},
-  {name:'重庆',monthly:2288,housingPct:19.1,income:37000},{name:'天津',monthly:2610,housingPct:24.3,income:53000},
-  {name:'苏州',monthly:2737,housingPct:29.1,income:58000},{name:'宁波',monthly:2737,housingPct:29.1,income:55000},
-  {name:'厦门',monthly:2503,housingPct:29.4,income:48000},{name:'青岛',monthly:1887,housingPct:21.4,income:39000},
-  {name:'大连',monthly:1884,housingPct:22.6,income:37000},{name:'合肥',monthly:1878,housingPct:22.3,income:35000},
-  {name:'郑州',monthly:1585,housingPct:24.0,income:30000},{name:'昆明',monthly:1579,housingPct:22.9,income:28000},
-  {name:'南宁',monthly:1529,housingPct:24.2,income:28000},{name:'贵阳',monthly:1495,housingPct:20.4,income:27000},
-  {name:'哈尔滨',monthly:1701,housingPct:20.3,income:29000},{name:'沈阳',monthly:1884,housingPct:22.6,income:37000},
-  {name:'兰州',monthly:1457,housingPct:22.6,income:25000},{name:'乌鲁木齐',monthly:1494,housingPct:20.4,income:27000},
-  {name:'拉萨',monthly:1375,housingPct:23.0,income:24000},{name:'海口',monthly:1792,housingPct:27.3,income:33000},
+  {name:'郑州',monthly:1585,housingPct:24.0,income:30000},
+  // 华北
+  {name:'石家庄',monthly:1741,housingPct:24.5,income:33000},{name:'太原',monthly:1461,housingPct:25.4,income:28000},
+  {name:'呼和浩特',monthly:1858,housingPct:22.1,income:38000},
+  // 东北
+  {name:'沈阳',monthly:1884,housingPct:22.6,income:37000},{name:'大连',monthly:1884,housingPct:22.6,income:37000},
+  {name:'长春',monthly:1491,housingPct:23.9,income:27000},{name:'哈尔滨',monthly:1701,housingPct:20.3,income:29000},
+  // 西南
+  {name:'成都',monthly:1858,housingPct:19.9,income:42000},{name:'昆明',monthly:1579,housingPct:22.9,income:28000},
+  {name:'贵阳',monthly:1495,housingPct:20.4,income:27000},
+  // 西北
+  {name:'西安',monthly:1654,housingPct:25.5,income:38000},{name:'兰州',monthly:1457,housingPct:22.6,income:25000},
+  {name:'西宁',monthly:1438,housingPct:23.2,income:26000},{name:'银川',monthly:1595,housingPct:21.8,income:30000},
+  {name:'乌鲁木齐',monthly:1494,housingPct:20.4,income:27000},{name:'拉萨',monthly:1375,housingPct:23.0,income:24000},
+  // 其他重点
+  {name:'无锡',monthly:2737,housingPct:29.1,income:55000},{name:'常州',monthly:2737,housingPct:29.1,income:52000},
+  {name:'温州',monthly:3248,housingPct:27.8,income:48000},{name:'珠海',monthly:2681,housingPct:27.4,income:52000},
+  {name:'三亚',monthly:1792,housingPct:27.3,income:35000},{name:'烟台',monthly:1887,housingPct:21.4,income:37000},
+  {name:'徐州',monthly:2737,housingPct:29.1,income:35000},{name:'洛阳',monthly:1585,housingPct:24.0,income:29000},
+  {name:'桂林',monthly:1529,housingPct:24.2,income:26000},
 ];
 
 // ============ 主流程 ============
@@ -79,25 +100,36 @@ function main() {
     data: CITIES,
   }, null, 2));
 
-  // 写入行业薪资
+  // 国家20行业门类薪资（GB/T 4754-2017）
   fs.writeFileSync(path.join(OUT_DIR, 'industries.json'), JSON.stringify({
     updated: new Date().toISOString(),
-    source: '国家统计局2025年数据',
+    source: '国家统计局2025年城镇单位就业人员平均工资',
+    count: 20,
     data: [
-      {name:'信息技术',nonPrivate:248752,private:128166},
-      {name:'金融业',nonPrivate:211164,private:140451},
-      {name:'科学研究和技术服务',nonPrivate:185000,private:95000},
-      {name:'制造业',nonPrivate:113594,private:76055},
-      {name:'建筑业',nonPrivate:100000,private:65000},
-      {name:'教育',nonPrivate:145000,private:65000},
-      {name:'医疗卫生',nonPrivate:165000,private:78000},
-      {name:'交通物流',nonPrivate:135000,private:72000},
-      {name:'批发零售',nonPrivate:95000,private:60000},
-      {name:'住宿餐饮',nonPrivate:75000,private:52000},
+      {code:'A',name:'农、林、牧、渔业',nonPrivate:75000,private:52000},
+      {code:'B',name:'采矿业',nonPrivate:145000,private:82000},
+      {code:'C',name:'制造业',nonPrivate:113594,private:76055},
+      {code:'D',name:'电力、热力、燃气及水生产供应',nonPrivate:180000,private:85000},
+      {code:'E',name:'建筑业',nonPrivate:100000,private:65000},
+      {code:'F',name:'批发和零售业',nonPrivate:95000,private:60000},
+      {code:'G',name:'交通运输、仓储和邮政业',nonPrivate:135000,private:72000},
+      {code:'H',name:'住宿和餐饮业',nonPrivate:75000,private:52000},
+      {code:'I',name:'信息传输、软件和信息技术服务业',nonPrivate:248752,private:128166},
+      {code:'J',name:'金融业',nonPrivate:211164,private:140451},
+      {code:'K',name:'房地产业',nonPrivate:85000,private:55000},
+      {code:'L',name:'租赁和商务服务业',nonPrivate:100000,private:65000},
+      {code:'M',name:'科学研究和技术服务业',nonPrivate:185000,private:95000},
+      {code:'N',name:'水利、环境和公共设施管理业',nonPrivate:80000,private:50000},
+      {code:'O',name:'居民服务、修理和其他服务业',nonPrivate:70000,private:45000},
+      {code:'P',name:'教育',nonPrivate:145000,private:65000},
+      {code:'Q',name:'卫生和社会工作',nonPrivate:165000,private:78000},
+      {code:'R',name:'文化、体育和娱乐业',nonPrivate:140000,private:70000},
+      {code:'S',name:'公共管理、社会保障和社会组织',nonPrivate:120000,private:0},
+      {code:'T',name:'国际组织',nonPrivate:200000,private:0},
     ],
   }, null, 2));
 
-  console.log(`Written ${SALARIES.length} salaries, ${CITIES.length} cities, 10 industries to ${OUT_DIR}`);
+  console.log(`Written ${SALARIES.length} salaries, ${CITIES.length} cities, 20 industries to ${OUT_DIR}`);
 }
 
 main();

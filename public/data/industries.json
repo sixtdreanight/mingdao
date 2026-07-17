@@ -1,56 +1,127 @@
 {
-  "updated": "2026-07-17T16:47:18.858Z",
-  "source": "国家统计局2025年数据",
+  "updated": "2026-07-17T16:53:00.707Z",
+  "source": "国家统计局2025年城镇单位就业人员平均工资",
+  "count": 20,
   "data": [
     {
-      "name": "信息技术",
-      "nonPrivate": 248752,
-      "private": 128166
+      "code": "A",
+      "name": "农、林、牧、渔业",
+      "nonPrivate": 75000,
+      "private": 52000
     },
     {
-      "name": "金融业",
-      "nonPrivate": 211164,
-      "private": 140451
+      "code": "B",
+      "name": "采矿业",
+      "nonPrivate": 145000,
+      "private": 82000
     },
     {
-      "name": "科学研究和技术服务",
-      "nonPrivate": 185000,
-      "private": 95000
-    },
-    {
+      "code": "C",
       "name": "制造业",
       "nonPrivate": 113594,
       "private": 76055
     },
     {
+      "code": "D",
+      "name": "电力、热力、燃气及水生产供应",
+      "nonPrivate": 180000,
+      "private": 85000
+    },
+    {
+      "code": "E",
       "name": "建筑业",
       "nonPrivate": 100000,
       "private": 65000
     },
     {
+      "code": "F",
+      "name": "批发和零售业",
+      "nonPrivate": 95000,
+      "private": 60000
+    },
+    {
+      "code": "G",
+      "name": "交通运输、仓储和邮政业",
+      "nonPrivate": 135000,
+      "private": 72000
+    },
+    {
+      "code": "H",
+      "name": "住宿和餐饮业",
+      "nonPrivate": 75000,
+      "private": 52000
+    },
+    {
+      "code": "I",
+      "name": "信息传输、软件和信息技术服务业",
+      "nonPrivate": 248752,
+      "private": 128166
+    },
+    {
+      "code": "J",
+      "name": "金融业",
+      "nonPrivate": 211164,
+      "private": 140451
+    },
+    {
+      "code": "K",
+      "name": "房地产业",
+      "nonPrivate": 85000,
+      "private": 55000
+    },
+    {
+      "code": "L",
+      "name": "租赁和商务服务业",
+      "nonPrivate": 100000,
+      "private": 65000
+    },
+    {
+      "code": "M",
+      "name": "科学研究和技术服务业",
+      "nonPrivate": 185000,
+      "private": 95000
+    },
+    {
+      "code": "N",
+      "name": "水利、环境和公共设施管理业",
+      "nonPrivate": 80000,
+      "private": 50000
+    },
+    {
+      "code": "O",
+      "name": "居民服务、修理和其他服务业",
+      "nonPrivate": 70000,
+      "private": 45000
+    },
+    {
+      "code": "P",
       "name": "教育",
       "nonPrivate": 145000,
       "private": 65000
     },
     {
-      "name": "医疗卫生",
+      "code": "Q",
+      "name": "卫生和社会工作",
       "nonPrivate": 165000,
       "private": 78000
     },
     {
-      "name": "交通物流",
-      "nonPrivate": 135000,
-      "private": 72000
+      "code": "R",
+      "name": "文化、体育和娱乐业",
+      "nonPrivate": 140000,
+      "private": 70000
     },
     {
-      "name": "批发零售",
-      "nonPrivate": 95000,
-      "private": 60000
+      "code": "S",
+      "name": "公共管理、社会保障和社会组织",
+      "nonPrivate": 120000,
+      "private": 0
     },
     {
-      "name": "住宿餐饮",
-      "nonPrivate": 75000,
-      "private": 52000
+      "code": "T",
+      "name": "国际组织",
+      "nonPrivate": 200000,
+      "private": 0
     }
   ]
 }
