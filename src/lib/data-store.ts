@@ -4,7 +4,7 @@
  */
 
 import type { KnowledgeAtom } from '@/types';
-import { searchAtoms } from '@/data/knowledge';
+import { loadAllAtoms } from '@/data/knowledge';
 
 let _atoms: KnowledgeAtom[] = [];
 let _loaded = false;
@@ -12,20 +12,7 @@ let _loaded = false;
 /** 加载全部数据（幂等，多次调用只加载一次） */
 export async function loadAllData(): Promise<KnowledgeAtom[]> {
   if (_loaded) return _atoms;
-  const queries: { kw: string; cats: string[] }[] = [
-    { kw: '2025', cats: ['salary','employment','education','cost','trend','policy','life'] },
-    { kw: '2024', cats: ['salary','cost','policy'] },
-    { kw: '薪资', cats: ['salary'] },
-    { kw: '就业', cats: ['employment'] },
-    { kw: '教育', cats: ['education'] },
-    { kw: '生活', cats: ['cost','life'] },
-    { kw: '趋势', cats: ['trend'] },
-    { kw: '政策', cats: ['policy'] },
-  ];
-
-  const results = await Promise.all(queries.map(q => searchAtoms(q.kw, q.cats, 20)));
-  const seen = new Set<string>();
-  _atoms = results.flat().filter(a => seen.has(a.id) ? false : (seen.add(a.id), true));
+  _atoms = await loadAllAtoms();
   _loaded = true;
   return _atoms;
 }
