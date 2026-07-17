@@ -76,6 +76,7 @@ export function ProfileDashboard() {
           return updated;
         });
         setShowCompetency(true);
+        toast('success', '能力画像已生成');
       }
     } catch { /* ignore */ }
     finally { setCompetencyLoading(false); }
@@ -97,6 +98,7 @@ export function ProfileDashboard() {
             setProfile(updated);
             localStorage.setItem('mingdao-profile', JSON.stringify(updated));
             setActiveTest(null);
+            toast('success', '兴趣测评结果已保存');
           }}
           onClose={() => setActiveTest(null)}
         />
@@ -108,6 +110,7 @@ export function ProfileDashboard() {
             setProfile(updated);
             localStorage.setItem('mingdao-profile', JSON.stringify(updated));
             setActiveTest(null);
+            toast('success', '性格测评结果已保存');
           }}
           onClose={() => setActiveTest(null)}
         />
