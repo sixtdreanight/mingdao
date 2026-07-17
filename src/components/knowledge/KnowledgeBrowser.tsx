@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { KnowledgeAtom } from '@/types';
 import { ExternalLink, Search, MapPin } from 'lucide-react';
-import { loadAllData } from '@/lib/data-store';
+import { loadAllAtoms } from '@/data/knowledge';
 
 function StatBadge({ label, value, icon }: { label: string; value: string; icon?: string }) {
   return (
@@ -33,7 +33,7 @@ export function KnowledgeBrowser() {
   };
 
   useEffect(() => {
-    loadAllData().then(data => setAtoms(data)).finally(() => setLoading(false));
+    loadAllAtoms().then(data => setAtoms(data)).finally(() => setLoading(false));
   }, []);
 
   const filtered = useMemo(() => {

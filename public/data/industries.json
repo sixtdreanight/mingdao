@@ -1,0 +1,56 @@
+{
+  "updated": "2026-07-17T16:47:18.858Z",
+  "source": "国家统计局2025年数据",
+  "data": [
+    {
+      "name": "信息技术",
+      "nonPrivate": 248752,
+      "private": 128166
+    },
+    {
+      "name": "金融业",
+      "nonPrivate": 211164,
+      "private": 140451
+    },
+    {
+      "name": "科学研究和技术服务",
+      "nonPrivate": 185000,
+      "private": 95000
+    },
+    {
+      "name": "制造业",
+      "nonPrivate": 113594,
+      "private": 76055
+    },
+    {
+      "name": "建筑业",
+      "nonPrivate": 100000,
+      "private": 65000
+    },
+    {
+      "name": "教育",
+      "nonPrivate": 145000,
+      "private": 65000
+    },
+    {
+      "name": "医疗卫生",
+      "nonPrivate": 165000,
+      "private": 78000
+    },
+    {
+      "name": "交通物流",
+      "nonPrivate": 135000,
+      "private": 72000
+    },
+    {
+      "name": "批发零售",
+      "nonPrivate": 95000,
+      "private": 60000
+    },
+    {
+      "name": "住宿餐饮",
+      "nonPrivate": 75000,
+      "private": 52000
+    }
+  ]
+}

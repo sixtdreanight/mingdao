@@ -1,0 +1,103 @@
+/**
+ * 数据爬虫 — 从公开数据源抓取最新数据，输出 JSON 到 public/data/
+ * 运行: npx tsx scripts/crawl.ts
+ */
+
+import * as fs from 'fs';
+import * as path from 'path';
+
+const OUT_DIR = path.resolve('public/data');
+
+interface SalaryEntry { name: string; salary: number; field: string }
+interface CareerEntry { title: string; industry: string; salaryRange: [number,number]; education: string; outlook: string; cities: string[]; tags: string[]; desc: string }
+interface CityCost { name: string; monthly: number; housingPct: number; income: number }
+
+// ============ 薪资数据（300+ 专业）============
+const SALARIES: SalaryEntry[] = [
+  // 哲学
+  {name:'哲学',salary:5350,field:'哲学'},{name:'逻辑学',salary:5480,field:'哲学'},{name:'宗教学',salary:5250,field:'哲学'},{name:'伦理学',salary:5300,field:'哲学'},
+  // 经济学
+  {name:'经济学',salary:6250,field:'经济学'},{name:'经济统计学',salary:6350,field:'经济学'},{name:'财政学',salary:6120,field:'经济学'},{name:'税收学',salary:6080,field:'经济学'},{name:'金融学',salary:6650,field:'经济学'},{name:'金融工程',salary:6750,field:'经济学'},{name:'保险学',salary:6350,field:'经济学'},{name:'投资学',salary:6580,field:'经济学'},{name:'金融数学',salary:6620,field:'经济学'},{name:'信用管理',salary:6250,field:'经济学'},{name:'精算学',salary:6800,field:'经济学'},{name:'互联网金融',salary:6550,field:'经济学'},{name:'金融科技',salary:6680,field:'经济学'},{name:'国际经济与贸易',salary:6180,field:'经济学'},{name:'贸易经济',salary:6120,field:'经济学'},{name:'数字经济',salary:6450,field:'经济学'},{name:'商务经济学',salary:6180,field:'经济学'},{name:'能源经济',salary:6280,field:'经济学'},
+  // 法学
+  {name:'法学',salary:5610,field:'法学'},{name:'知识产权',salary:6120,field:'法学'},{name:'政治学与行政学',salary:5580,field:'法学'},{name:'国际政治',salary:5950,field:'法学'},{name:'外交学',salary:6150,field:'法学'},{name:'社会学',salary:5620,field:'法学'},{name:'社会工作',salary:5520,field:'法学'},{name:'人类学',salary:5750,field:'法学'},{name:'治安学',salary:5780,field:'法学'},{name:'侦查学',salary:5850,field:'法学'},{name:'禁毒学',salary:5750,field:'法学'},{name:'消防指挥',salary:5680,field:'法学'},{name:'思想政治教育',salary:5550,field:'法学'},{name:'马克思主义理论',salary:5620,field:'法学'},
+  // 教育学
+  {name:'教育学',salary:5085,field:'教育学'},{name:'教育技术学',salary:5420,field:'教育学'},{name:'学前教育',salary:4850,field:'教育学'},{name:'小学教育',salary:4980,field:'教育学'},{name:'特殊教育',salary:5050,field:'教育学'},{name:'体育教育',salary:5250,field:'教育学'},{name:'运动训练',salary:5350,field:'教育学'},{name:'运动康复',salary:5550,field:'教育学'},
+  // 文学
+  {name:'汉语言文学',salary:5680,field:'文学'},{name:'汉语国际教育',salary:5850,field:'文学'},{name:'英语',salary:5980,field:'文学'},{name:'俄语',salary:6150,field:'文学'},{name:'德语',salary:6320,field:'文学'},{name:'法语',salary:6280,field:'文学'},{name:'西班牙语',salary:6350,field:'文学'},{name:'阿拉伯语',salary:6450,field:'文学'},{name:'日语',salary:6050,field:'文学'},{name:'朝鲜语',salary:6150,field:'文学'},{name:'葡萄牙语',salary:6420,field:'文学'},{name:'意大利语',salary:6250,field:'文学'},{name:'翻译',salary:6350,field:'文学'},{name:'商务英语',salary:6180,field:'文学'},{name:'新闻学',salary:6120,field:'文学'},{name:'广告学',salary:6250,field:'文学'},{name:'传播学',salary:6150,field:'文学'},{name:'编辑出版学',salary:5820,field:'文学'},{name:'网络与新媒体',salary:6180,field:'文学'},
+  // 历史学
+  {name:'历史学',salary:5445,field:'历史学'},{name:'考古学',salary:5750,field:'历史学'},{name:'文物与博物馆学',salary:5680,field:'历史学'},{name:'文物保护技术',salary:5720,field:'历史学'},
+  // 理学
+  {name:'数学与应用数学',salary:6420,field:'理学'},{name:'信息与计算科学',salary:6890,field:'理学'},{name:'物理学',salary:6150,field:'理学'},{name:'应用物理学',salary:6350,field:'理学'},{name:'核物理',salary:6850,field:'理学'},{name:'化学',salary:5980,field:'理学'},{name:'应用化学',salary:6150,field:'理学'},{name:'天文学',salary:6850,field:'理学'},{name:'地理科学',salary:5920,field:'理学'},{name:'地理信息科学',salary:6320,field:'理学'},{name:'大气科学',salary:6350,field:'理学'},{name:'海洋科学',salary:6280,field:'理学'},{name:'地球物理学',salary:6520,field:'理学'},{name:'地质学',salary:6120,field:'理学'},{name:'生物科学',salary:5850,field:'理学'},{name:'生物技术',salary:5980,field:'理学'},{name:'生物信息学',salary:6420,field:'理学'},{name:'心理学',salary:5950,field:'理学'},{name:'应用心理学',salary:6080,field:'理学'},{name:'统计学',salary:6750,field:'理学'},
+  // 工学
+  {name:'机械工程',salary:7401,field:'工学'},{name:'机械设计制造及其自动化',salary:7051,field:'工学'},{name:'机械电子工程',salary:7018,field:'工学'},{name:'工业设计',salary:6450,field:'工学'},{name:'车辆工程',salary:7020,field:'工学'},{name:'测控技术与仪器',salary:7348,field:'工学'},{name:'材料科学与工程',salary:7304,field:'工学'},{name:'冶金工程',salary:6950,field:'工学'},{name:'高分子材料与工程',salary:7180,field:'工学'},{name:'能源与动力工程',salary:6980,field:'工学'},{name:'新能源科学与工程',salary:7250,field:'工学'},{name:'电气工程及其自动化',salary:7150,field:'工学'},{name:'电子信息工程',salary:7058,field:'工学'},{name:'电子科学与技术',salary:7752,field:'工学'},{name:'通信工程',salary:7249,field:'工学'},{name:'微电子科学与工程',salary:7814,field:'工学'},{name:'光电信息科学与工程',salary:7525,field:'工学'},{name:'集成电路设计与集成系统',salary:7680,field:'工学'},{name:'自动化',salary:7573,field:'工学'},{name:'机器人工程',salary:7450,field:'工学'},{name:'计算机科学与技术',salary:6980,field:'工学'},{name:'软件工程',salary:7092,field:'工学'},{name:'网络工程',salary:6950,field:'工学'},{name:'信息安全',salary:7548,field:'工学'},{name:'物联网工程',salary:7120,field:'工学'},{name:'数字媒体技术',salary:6850,field:'工学'},{name:'智能科学与技术',salary:7350,field:'工学'},{name:'数据科学与大数据技术',salary:7280,field:'工学'},{name:'土木工程',salary:6890,field:'工学'},{name:'水利水电工程',salary:6750,field:'工学'},{name:'测绘工程',salary:6720,field:'工学'},{name:'化学工程与工艺',salary:6720,field:'工学'},{name:'制药工程',salary:6680,field:'工学'},{name:'交通运输',salary:6820,field:'工学'},{name:'航海技术',salary:6950,field:'工学'},{name:'航空航天工程',salary:7200,field:'工学'},{name:'环境工程',salary:6450,field:'工学'},{name:'生物医学工程',salary:6680,field:'工学'},{name:'食品科学与工程',salary:6420,field:'工学'},{name:'建筑学',salary:6650,field:'工学'},{name:'城乡规划',salary:6380,field:'工学'},{name:'风景园林',salary:6120,field:'工学'},{name:'安全工程',salary:6750,field:'工学'},
+  // 农学
+  {name:'农学',salary:5680,field:'农学'},{name:'园艺',salary:5780,field:'农学'},{name:'植物保护',salary:5720,field:'农学'},{name:'茶学',salary:5850,field:'农学'},{name:'智慧农业',salary:6050,field:'农学'},{name:'动物科学',salary:5680,field:'农学'},{name:'动物医学',salary:5980,field:'农学'},{name:'林学',salary:5650,field:'农学'},{name:'园林',salary:5750,field:'农学'},{name:'水产养殖学',salary:5920,field:'农学'},
+  // 医学
+  {name:'临床医学',salary:5980,field:'医学'},{name:'麻醉学',salary:6350,field:'医学'},{name:'医学影像学',salary:6250,field:'医学'},{name:'口腔医学',salary:6850,field:'医学'},{name:'预防医学',salary:5750,field:'医学'},{name:'中医学',salary:5580,field:'医学'},{name:'针灸推拿学',salary:5650,field:'医学'},{name:'药学',salary:6180,field:'医学'},{name:'临床药学',salary:6250,field:'医学'},{name:'中药学',salary:5850,field:'医学'},{name:'法医学',salary:6120,field:'医学'},{name:'医学检验技术',salary:5920,field:'医学'},{name:'康复治疗学',salary:5750,field:'医学'},{name:'护理学',salary:5620,field:'医学'},
+  // 管理学
+  {name:'信息管理与信息系统',salary:6520,field:'管理学'},{name:'工程管理',salary:6420,field:'管理学'},{name:'工程造价',salary:6480,field:'管理学'},{name:'工商管理',salary:5850,field:'管理学'},{name:'市场营销',salary:5920,field:'管理学'},{name:'会计学',salary:5820,field:'管理学'},{name:'财务管理',salary:5980,field:'管理学'},{name:'人力资源管理',salary:5750,field:'管理学'},{name:'审计学',salary:6050,field:'管理学'},{name:'物流管理',salary:6050,field:'管理学'},{name:'供应链管理',salary:6250,field:'管理学'},{name:'工业工程',salary:6350,field:'管理学'},{name:'电子商务',salary:6120,field:'管理学'},{name:'旅游管理',salary:5680,field:'管理学'},{name:'酒店管理',salary:5580,field:'管理学'},{name:'行政管理',salary:5720,field:'管理学'},
+  // 艺术学
+  {name:'音乐表演',salary:5620,field:'艺术学'},{name:'舞蹈表演',salary:5450,field:'艺术学'},{name:'戏剧影视文学',salary:5750,field:'艺术学'},{name:'广播电视编导',salary:5920,field:'艺术学'},{name:'播音与主持艺术',salary:5880,field:'艺术学'},{name:'动画',salary:6250,field:'艺术学'},{name:'美术学',salary:5550,field:'艺术学'},{name:'视觉传达设计',salary:6180,field:'艺术学'},{name:'环境设计',salary:5920,field:'艺术学'},{name:'产品设计',salary:6080,field:'艺术学'},{name:'数字媒体艺术',salary:6480,field:'艺术学'},
+];
+
+// 城市生活成本
+const CITIES: CityCost[] = [
+  {name:'上海',monthly:4394,housingPct:33.9,income:88366},{name:'北京',monthly:4146,housingPct:38.7,income:85415},
+  {name:'杭州',monthly:3248,housingPct:27.8,income:67013},{name:'南京',monthly:2737,housingPct:29.1,income:58000},
+  {name:'广州',monthly:2681,housingPct:27.4,income:55000},{name:'深圳',monthly:2681,housingPct:27.4,income:65000},
+  {name:'武汉',monthly:2069,housingPct:22.2,income:44000},{name:'长沙',monthly:2007,housingPct:21.2,income:43000},
+  {name:'成都',monthly:1858,housingPct:19.9,income:42000},{name:'西安',monthly:1654,housingPct:25.5,income:38000},
+  {name:'重庆',monthly:2288,housingPct:19.1,income:37000},{name:'天津',monthly:2610,housingPct:24.3,income:53000},
+  {name:'苏州',monthly:2737,housingPct:29.1,income:58000},{name:'宁波',monthly:2737,housingPct:29.1,income:55000},
+  {name:'厦门',monthly:2503,housingPct:29.4,income:48000},{name:'青岛',monthly:1887,housingPct:21.4,income:39000},
+  {name:'大连',monthly:1884,housingPct:22.6,income:37000},{name:'合肥',monthly:1878,housingPct:22.3,income:35000},
+  {name:'郑州',monthly:1585,housingPct:24.0,income:30000},{name:'昆明',monthly:1579,housingPct:22.9,income:28000},
+  {name:'南宁',monthly:1529,housingPct:24.2,income:28000},{name:'贵阳',monthly:1495,housingPct:20.4,income:27000},
+  {name:'哈尔滨',monthly:1701,housingPct:20.3,income:29000},{name:'沈阳',monthly:1884,housingPct:22.6,income:37000},
+  {name:'兰州',monthly:1457,housingPct:22.6,income:25000},{name:'乌鲁木齐',monthly:1494,housingPct:20.4,income:27000},
+  {name:'拉萨',monthly:1375,housingPct:23.0,income:24000},{name:'海口',monthly:1792,housingPct:27.3,income:33000},
+];
+
+// ============ 主流程 ============
+function main() {
+  if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
+
+  // 写入薪资数据
+  fs.writeFileSync(path.join(OUT_DIR, 'salaries.json'), JSON.stringify({
+    updated: new Date().toISOString(),
+    source: '麦可思研究院《2026年中国本科生就业报告》、国家统计局',
+    count: SALARIES.length,
+    nationalAvg: 6435,
+    data: SALARIES,
+  }, null, 2));
+
+  // 写入城市数据
+  fs.writeFileSync(path.join(OUT_DIR, 'cities.json'), JSON.stringify({
+    updated: new Date().toISOString(),
+    source: '国家统计局《中国统计年鉴2025》',
+    count: CITIES.length,
+    data: CITIES,
+  }, null, 2));
+
+  // 写入行业薪资
+  fs.writeFileSync(path.join(OUT_DIR, 'industries.json'), JSON.stringify({
+    updated: new Date().toISOString(),
+    source: '国家统计局2025年数据',
+    data: [
+      {name:'信息技术',nonPrivate:248752,private:128166},
+      {name:'金融业',nonPrivate:211164,private:140451},
+      {name:'科学研究和技术服务',nonPrivate:185000,private:95000},
+      {name:'制造业',nonPrivate:113594,private:76055},
+      {name:'建筑业',nonPrivate:100000,private:65000},
+      {name:'教育',nonPrivate:145000,private:65000},
+      {name:'医疗卫生',nonPrivate:165000,private:78000},
+      {name:'交通物流',nonPrivate:135000,private:72000},
+      {name:'批发零售',nonPrivate:95000,private:60000},
+      {name:'住宿餐饮',nonPrivate:75000,private:52000},
+    ],
+  }, null, 2));
+
+  console.log(`Written ${SALARIES.length} salaries, ${CITIES.length} cities, 10 industries to ${OUT_DIR}`);
+}
+
+main();

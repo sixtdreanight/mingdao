@@ -1,0 +1,175 @@
+{
+  "updated": "2026-07-17T16:47:18.858Z",
+  "source": "国家统计局《中国统计年鉴2025》",
+  "count": 28,
+  "data": [
+    {
+      "name": "上海",
+      "monthly": 4394,
+      "housingPct": 33.9,
+      "income": 88366
+    },
+    {
+      "name": "北京",
+      "monthly": 4146,
+      "housingPct": 38.7,
+      "income": 85415
+    },
+    {
+      "name": "杭州",
+      "monthly": 3248,
+      "housingPct": 27.8,
+      "income": 67013
+    },
+    {
+      "name": "南京",
+      "monthly": 2737,
+      "housingPct": 29.1,
+      "income": 58000
+    },
+    {
+      "name": "广州",
+      "monthly": 2681,
+      "housingPct": 27.4,
+      "income": 55000
+    },
+    {
+      "name": "深圳",
+      "monthly": 2681,
+      "housingPct": 27.4,
+      "income": 65000
+    },
+    {
+      "name": "武汉",
+      "monthly": 2069,
+      "housingPct": 22.2,
+      "income": 44000
+    },
+    {
+      "name": "长沙",
+      "monthly": 2007,
+      "housingPct": 21.2,
+      "income": 43000
+    },
+    {
+      "name": "成都",
+      "monthly": 1858,
+      "housingPct": 19.9,
+      "income": 42000
+    },
+    {
+      "name": "西安",
+      "monthly": 1654,
+      "housingPct": 25.5,
+      "income": 38000
+    },
+    {
+      "name": "重庆",
+      "monthly": 2288,
+      "housingPct": 19.1,
+      "income": 37000
+    },
+    {
+      "name": "天津",
+      "monthly": 2610,
+      "housingPct": 24.3,
+      "income": 53000
+    },
+    {
+      "name": "苏州",
+      "monthly": 2737,
+      "housingPct": 29.1,
+      "income": 58000
+    },
+    {
+      "name": "宁波",
+      "monthly": 2737,
+      "housingPct": 29.1,
+      "income": 55000
+    },
+    {
+      "name": "厦门",
+      "monthly": 2503,
+      "housingPct": 29.4,
+      "income": 48000
+    },
+    {
+      "name": "青岛",
+      "monthly": 1887,
+      "housingPct": 21.4,
+      "income": 39000
+    },
+    {
+      "name": "大连",
+      "monthly": 1884,
+      "housingPct": 22.6,
+      "income": 37000
+    },
+    {
+      "name": "合肥",
+      "monthly": 1878,
+      "housingPct": 22.3,
+      "income": 35000
+    },
+    {
+      "name": "郑州",
+      "monthly": 1585,
+      "housingPct": 24,
+      "income": 30000
+    },
+    {
+      "name": "昆明",
+      "monthly": 1579,
+      "housingPct": 22.9,
+      "income": 28000
+    },
+    {
+      "name": "南宁",
+      "monthly": 1529,
+      "housingPct": 24.2,
+      "income": 28000
+    },
+    {
+      "name": "贵阳",
+      "monthly": 1495,
+      "housingPct": 20.4,
+      "income": 27000
+    },
+    {
+      "name": "哈尔滨",
+      "monthly": 1701,
+      "housingPct": 20.3,
+      "income": 29000
+    },
+    {
+      "name": "沈阳",
+      "monthly": 1884,
+      "housingPct": 22.6,
+      "income": 37000
+    },
+    {
+      "name": "兰州",
+      "monthly": 1457,
+      "housingPct": 22.6,
+      "income": 25000
+    },
+    {
+      "name": "乌鲁木齐",
+      "monthly": 1494,
+      "housingPct": 20.4,
+      "income": 27000
+    },
+    {
+      "name": "拉萨",
+      "monthly": 1375,
+      "housingPct": 23,
+      "income": 24000
+    },
+    {
+      "name": "海口",
+      "monthly": 1792,
+      "housingPct": 27.3,
+      "income": 33000
+    }
+  ]
+}

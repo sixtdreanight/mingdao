@@ -2,12 +2,12 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { MapPin, ArrowUp, ArrowDown, Info } from 'lucide-react';
-import { loadAllData, getSalaryRanking, getCityCosts, getIndustrySalaries } from '@/lib/data-store';
+import { loadAllData, getSalaryRanking, getCityCosts } from '@/lib/data-store';
 
 const MAJOR_COLORS = ['#10b981','#f59e0b','#3b82f6','#8b5cf6','#ef4444','#06b6d4','#f97316','#6366f1','#14b8a6','#ec4899','#84cc16','#0ea5e9'];
 
 export function SalaryCompare() {
-  const [majors, setMajors] = useState<{ name: string; salary: number; industry: string }[]>([]);
+  const [majors, setMajors] = useState<{ name: string; salary: number; field: string }[]>([]);
   const [cities, setCities] = useState<{ name: string; monthly: number }[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selCity, setSelCity] = useState('上海');
@@ -15,9 +15,9 @@ export function SalaryCompare() {
 
   useEffect(() => {
     loadAllData().then(() => {
-      const all = getSalaryRanking();
-      setMajors(all); // 全部专业，不截断
+      setMajors(getSalaryRanking());
       setCities(getCityCosts().slice(0, 12).map(c => ({ name: c.name, monthly: Math.round(c.income / 12) })));
+      const all = getSalaryRanking();
       setSelected(new Set(all.slice(0, 6).map(m => m.name)));
       setLoading(false);
     });
