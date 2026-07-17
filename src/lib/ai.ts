@@ -28,18 +28,21 @@ export async function chatWithAI(
     return { reply: '请先告诉我你的情况，我来帮你看看有哪些路可以走。', sources: [] };
   }
 
-  // 实时搜索
-  const webResults = await searchWeb(lastUserMessage.content);
+  // 只在用户问实质性问题时搜索（跳过问候/简单确认）
+  const isSubstantive = lastUserMessage.content.length > 8 &&
+    !/^(你好|hi|hello|嗯|哦|好|可以|行|是的|对|谢谢|ok|哈哈)/i.test(lastUserMessage.content.trim());
+  const webResults = isSubstantive ? await searchWeb(lastUserMessage.content) : [];
   const sources: ChatSource[] = webResults.map((r) => ({
     title: r.title,
     url: r.url,
     snippet: r.snippet,
   }));
 
-  // 本地知识库（补充）
+  // 本地知识库（仅用于 prompt 上下文，不作为来源展示——目前全是 AI 推断数据）
   const relevantAtoms = await searchRelevantAtoms(lastUserMessage.content, userProfile);
+  // 仅添加官方认证的真来源
   for (const { atom } of relevantAtoms) {
-    if (atom.sourceUrl && atom.sourceUrl.startsWith('http')) {
+    if (atom.trustLevel === 'official' && atom.sourceUrl?.startsWith('http')) {
       sources.push(atom);
     }
   }
@@ -72,18 +75,20 @@ export async function chatWithAIStream(
     };
   }
 
-  // 实时搜索
-  const webResults = await searchWeb(lastUserMessage.content);
+  // 只在实质性问题时搜索
+  const isSubstantive = lastUserMessage.content.length > 8 &&
+    !/^(你好|hi|hello|嗯|哦|好|可以|行|是的|对|谢谢|ok|哈哈)/i.test(lastUserMessage.content.trim());
+  const webResults = isSubstantive ? await searchWeb(lastUserMessage.content) : [];
   const sources: ChatSource[] = webResults.map((r) => ({
     title: r.title,
     url: r.url,
     snippet: r.snippet,
   }));
 
-  // 本地知识库
+  // 本地知识库（仅补充官方认证来源）
   const relevantAtoms = await searchRelevantAtoms(lastUserMessage.content, userProfile);
   for (const { atom } of relevantAtoms) {
-    if (atom.sourceUrl && atom.sourceUrl.startsWith('http')) {
+    if (atom.trustLevel === 'official' && atom.sourceUrl?.startsWith('http')) {
       sources.push(atom);
     }
   }
