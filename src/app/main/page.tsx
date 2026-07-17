@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { ContentRouter } from '@/components/layout/ContentRouter';
 import { HistoryDrawer } from '@/components/history/HistoryDrawer';
+import { WelcomeGuide } from '@/components/onboarding/WelcomeGuide';
 
 function MainContent() {
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -22,6 +23,7 @@ function MainContent() {
       <AppSidebar onOpenHistory={() => setHistoryOpen(true)} />
       <ContentRouter />
       <HistoryDrawer open={historyOpen} onClose={() => setHistoryOpen(false)} />
+      <WelcomeGuide />
     </div>
   );
 }

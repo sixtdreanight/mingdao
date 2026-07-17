@@ -8,6 +8,7 @@ import type { OccupationCompetencyProfile, StudentCompetencyProfile, SelfAssessm
 import { batchMatch } from '@/lib/resource-matcher';
 import { CareerTest } from './CareerTest';
 import { PersonalityTest } from './PersonalityTest';
+import { toast } from '@/components/ui/toast';
 import { Beaker, Brain } from 'lucide-react';
 
 type TestType = 'career' | 'mbti' | null;
@@ -203,6 +204,7 @@ export function ProfileDashboard() {
                   const { default: router } = await import('next/navigation');
                   saveRoutes(json.data.routes);
                   window.dispatchEvent(new Event('routes-updated'));
+                  toast('success', `已生成 ${json.data.routes.length} 条路线，在成就图鉴中查看`);
                 }
               } catch { /* ignore */ }
               finally { setCompetencyLoading(false); }
