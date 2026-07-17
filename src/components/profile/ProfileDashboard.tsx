@@ -6,6 +6,8 @@ import { ProfileCard } from '@/components/chat/ProfileCard';
 import { CompetencyCard } from '@/components/chat/CompetencyCard';
 import type { OccupationCompetencyProfile, StudentCompetencyProfile, SelfAssessment, ProficiencyLevel } from '@/types/competency';
 import { batchMatch } from '@/lib/resource-matcher';
+import { CareerTest } from './CareerTest';
+import { Beaker } from 'lucide-react';
 
 export function ProfileDashboard() {
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
@@ -15,6 +17,7 @@ export function ProfileDashboard() {
   const [competencyLoading, setCompetencyLoading] = useState(false);
   const [competencyOccupation, setCompetencyOccupation] = useState('');
   const [activityCount, setActivityCount] = useState(0);
+  const [showTest, setShowTest] = useState(false);
 
   useEffect(() => {
     const load = () => {
@@ -78,6 +81,34 @@ export function ProfileDashboard() {
     <div className="flex h-full flex-col overflow-y-auto p-6">
       <h2 className="mb-6 text-lg font-semibold tracking-tight text-foreground">个人画像</h2>
 
+      {/* 测评工具 */}
+      {showTest ? (
+        <CareerTest
+          onComplete={(result) => {
+            const updated = {
+              ...profile,
+              interests: [...new Set([...(profile.interests || []), ...result.interests])],
+              lifestyle: [...new Set([...(profile.lifestyle || []), ...result.values])],
+            };
+            setProfile(updated);
+            localStorage.setItem('mingdao-profile', JSON.stringify(updated));
+            setShowTest(false);
+          }}
+          onClose={() => setShowTest(false)}
+        />
+      ) : (
+        <button
+          onClick={() => setShowTest(true)}
+          className="mb-6 flex w-full items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10"
+        >
+          <Beaker className="h-5 w-5 text-primary" />
+          <div>
+            <p className="text-sm font-medium text-foreground">职业兴趣测评</p>
+            <p className="text-xs text-muted-foreground">Holland 六型 + 职业价值观，帮你更了解自己</p>
+          </div>
+        </button>
+      )}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* 角色卡 */}
         <div>
@@ -128,6 +159,36 @@ export function ProfileDashboard() {
           <StatCard label="对话次数" value={String(activityCount)} />
           <StatCard label="能力评估" value={String(studentCompetency.selfAssessments.length)} />
           <StatCard label="资源收藏" value="—" />
+        </div>
+      </div>
+
+      {/* 路线图入口 */}
+      <div className="mt-6 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">生成路线图</p>
+            <p className="text-xs text-muted-foreground mt-0.5">基于你的画像，AI 规划可行的职业路线</p>
+          </div>
+          <button
+            onClick={async () => {
+              setCompetencyLoading(true);
+              try {
+                const res = await fetch('/api/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile }) });
+                const json = await res.json();
+                if (json.success && json.data?.routes) {
+                  const { saveRoutes } = await import('@/lib/route-store');
+                  const { default: router } = await import('next/navigation');
+                  saveRoutes(json.data.routes);
+                  window.dispatchEvent(new Event('routes-updated'));
+                }
+              } catch { /* ignore */ }
+              finally { setCompetencyLoading(false); }
+            }}
+            disabled={competencyLoading}
+            className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-30"
+          >
+            {competencyLoading ? '生成中...' : '生成路线图'}
+          </button>
         </div>
       </div>
     </div>

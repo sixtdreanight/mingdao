@@ -11,12 +11,14 @@ import {
   ChevronRight,
   History,
   User,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { id: 'coach',     icon: Sparkles,    label: 'AI规划师', en: 'Coach' },
   { id: 'profile',   icon: UserCircle,  label: '个人画像', en: 'Profile' },
+  { id: 'routes',    icon: Map,         label: '成就图鉴', en: 'Routes' },
   { id: 'knowledge', icon: Database,    label: '数据库',   en: 'Knowledge' },
   { id: 'resources', icon: Library,     label: '资源库',   en: 'Resources' },
 ];

@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 import { ResourceBrowser } from '@/components/chat/ResourceBrowser';
 import { ProfileDashboard } from '@/components/profile/ProfileDashboard';
+import { RouteBoard } from '@/components/routes/RouteBoard';
 
 function KnowledgeView() {
   return (
@@ -34,6 +35,9 @@ export function ContentRouter() {
       </div>
       <div className={tab === 'resources' ? 'h-full' : 'hidden'}>
         <ResourceBrowser />
+      </div>
+      <div className={tab === 'routes' ? 'h-full overflow-auto' : 'hidden'}>
+        <RouteBoard />
       </div>
     </div>
   );

@@ -60,6 +60,9 @@ export function ChatInterface() {
             try {
               const meta = JSON.parse(buffer.slice(0, nl));
               sources = meta.sources || [];
+              if (meta.profile && Object.keys(meta.profile).length > 0) {
+                setProfile(prev => mergeProfile(prev, meta.profile));
+              }
             } catch { /* ignore */ }
             buffer = buffer.slice(nl + 1);
           }
