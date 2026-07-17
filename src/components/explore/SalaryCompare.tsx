@@ -16,7 +16,7 @@ export function SalaryCompare() {
   useEffect(() => {
     loadAllData().then(() => {
       const all = getSalaryRanking();
-      setMajors(all.slice(0, 30));
+      setMajors(all); // 全部专业，不截断
       setCities(getCityCosts().slice(0, 12).map(c => ({ name: c.name, monthly: Math.round(c.income / 12) })));
       setSelected(new Set(all.slice(0, 6).map(m => m.name)));
       setLoading(false);
