@@ -105,6 +105,7 @@ export function ChatInterface() {
       setProfile(merged);
       localStorage.setItem('mingdao-profile', JSON.stringify(merged));
       localStorage.setItem('mingdao-messages', JSON.stringify(allMessages));
+      window.dispatchEvent(new Event('profile-updated'));
 
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: '网络不稳定，请重试。', timestamp: new Date().toISOString() }]);

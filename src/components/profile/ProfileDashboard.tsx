@@ -17,18 +17,28 @@ export function ProfileDashboard() {
   const [activityCount, setActivityCount] = useState(0);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('mingdao-competency');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.studentCompetency) setStudentCompetency(parsed.studentCompetency);
-        if (parsed.competencyProfile) { setCompetencyProfile(parsed.competencyProfile); setShowCompetency(true); }
-      }
-      const profileSaved = localStorage.getItem('mingdao-profile');
-      if (profileSaved) setProfile(JSON.parse(profileSaved));
-      const activities = JSON.parse(localStorage.getItem('mingdao-activity') || '[]');
-      setActivityCount(activities.length);
-    } catch { /* ignore */ }
+    const load = () => {
+      try {
+        const saved = localStorage.getItem('mingdao-competency');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.studentCompetency) setStudentCompetency(parsed.studentCompetency);
+          if (parsed.competencyProfile) { setCompetencyProfile(parsed.competencyProfile); setShowCompetency(true); }
+        }
+        const profileSaved = localStorage.getItem('mingdao-profile');
+        if (profileSaved) setProfile(JSON.parse(profileSaved));
+        const activities = JSON.parse(localStorage.getItem('mingdao-activity') || '[]');
+        setActivityCount(activities.length);
+      } catch { /* ignore */ }
+    };
+    load();
+    // 监听自定义事件 — ChatInterface 写入时触发
+    window.addEventListener('profile-updated', load);
+    window.addEventListener('storage', load);
+    return () => {
+      window.removeEventListener('profile-updated', load);
+      window.removeEventListener('storage', load);
+    };
   }, []);
 
   const handleAssess = (competencyId: string, level: ProficiencyLevel, evidence: string) => {
