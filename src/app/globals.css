@@ -34,13 +34,16 @@
     --sidebar-ring: #C96442;
   }
 
-  html { background-color: #FDF9F4; }
+  html { background-color: #FAF8F5; }
   body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   * { @apply border-border; }
-  *:focus-visible { outline: 2px solid #C96442; outline-offset: 2px; border-radius: 3px; }
+  *:focus-visible { outline: 2px solid #C96442; outline-offset: 2px; border-radius: 4px; }
   .chat-scroll { scroll-behavior: smooth; }
-  .resize-handle { cursor: col-resize; transition: background-color 150ms ease; }
-  .resize-handle:hover, .resize-handle:active { background-color: rgba(201, 100, 66, 0.12); }
+  /* Subtle card hover lift */
+  .card-hover { transition: box-shadow 150ms ease, transform 150ms ease; }
+  .card-hover:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.04); transform: translateY(-1px); }
+  /* Glass surface */
+  .glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 }
 
 @layer components {

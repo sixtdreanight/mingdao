@@ -1,21 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { KnowledgeAtom } from '@/types';
-import { ExternalLink, Search } from 'lucide-react';
+import { ExternalLink, Search, TrendingUp, MapPin } from 'lucide-react';
 import { searchAtoms } from '@/data/knowledge';
 
-const CAT_LABELS: Record<string, { label: string; icon: string }> = {
-  salary: { label: '薪资数据', icon: '💰' },
-  education: { label: '教育路径', icon: '🎓' },
-  employment: { label: '就业市场', icon: '💼' },
-  trend: { label: '行业趋势', icon: '📈' },
-  policy: { label: '政策规定', icon: '📋' },
-  cost: { label: '生活成本', icon: '🏠' },
-  life: { label: '工作生活', icon: '🌿' },
-};
-
-const QUERIES = [
+const QUERIES: { kw: string; cats: string[] }[] = [
   { kw: '薪资', cats: ['salary'] },
   { kw: '生活成本', cats: ['cost'] },
   { kw: '就业', cats: ['employment'] },
@@ -24,105 +14,126 @@ const QUERIES = [
   { kw: '政策', cats: ['policy'] },
 ];
 
+function StatBadge({ label, value, icon }: { label: string; value: string; icon?: string }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-lg bg-secondary/60 px-2.5 py-1.5">
+      {icon && <span className="text-xs">{icon}</span>}
+      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <span className="text-xs font-semibold text-foreground tabular-nums">{value}</span>
+    </div>
+  );
+}
+
 export function KnowledgeBrowser() {
   const [atoms, setAtoms] = useState<KnowledgeAtom[]>([]);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useState(() => {
+  useEffect(() => {
     Promise.all(QUERIES.map(q => searchAtoms(q.kw, q.cats, 5)))
       .then(results => {
-        const all = results.flat();
         const seen = new Set<string>();
-        const unique = all.filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true; });
-        setAtoms(unique);
+        setAtoms(results.flat().filter(a => seen.has(a.id) ? false : (seen.add(a.id), true)));
       })
       .finally(() => setLoading(false));
-  });
+  }, []);
 
-  const categories = useMemo(() => [...new Set(atoms.map(a => a.category))], [atoms]);
+  const filtered = useMemo(() => atoms.filter(a => {
+    if (catFilter && a.category !== catFilter) return false;
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q) || a.tags.some(t => t.toLowerCase().includes(q));
+  }), [atoms, search, catFilter]);
 
-  const filtered = useMemo(() => {
-    return atoms.filter(a => {
-      if (catFilter && a.category !== catFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return a.title.toLowerCase().includes(q) ||
-          a.content.toLowerCase().includes(q) ||
-          a.tags.some(t => t.toLowerCase().includes(q));
-      }
-      return true;
-    });
-  }, [atoms, search, catFilter]);
-
-  if (loading) return <div className="flex items-center justify-center h-full text-sm text-muted-foreground">加载中...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-full">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        加载数据库...
+      </div>
+    </div>
+  );
 
   return (
-    <div className="flex h-full flex-col overflow-hidden p-6">
-      <h2 className="mb-4 text-lg font-semibold tracking-tight text-foreground">数据库</h2>
-      <p className="mb-3 text-xs text-muted-foreground">
-        共 {atoms.length} 条数据，覆盖 {categories.length} 个维度
-      </p>
-
-      <div className="mb-4 flex gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-lg border border-input bg-background px-3 py-1.5">
-          <Search className="h-3.5 w-3.5 text-muted-foreground/50" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索数据..." className="flex-1 bg-transparent text-xs outline-none" />
+    <div className="h-full overflow-y-auto">
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">数据库</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{atoms.length} 条结构化数据，来自官方统计与权威报告</p>
         </div>
-      </div>
 
-      <div className="flex gap-1 mb-4 flex-wrap">
-        <button onClick={() => setCatFilter(null)} className={`rounded-lg px-2.5 py-1 text-xs ${!catFilter ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>全部</button>
-        {categories.map(c => (
-          <button key={c} onClick={() => setCatFilter(c === catFilter ? null : c)} className={`rounded-lg px-2.5 py-1 text-xs ${c === catFilter ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{CAT_LABELS[c]?.icon} {CAT_LABELS[c]?.label || c}</button>
-        ))}
-      </div>
+        {/* Search & Filter */}
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex flex-1 items-center gap-2 rounded-xl border border-border/60 bg-card px-4 py-2.5 shadow-sm transition-colors focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/10">
+            <Search className="h-4 w-4 text-muted-foreground/40" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索薪资、城市、专业..." className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40" />
+          </div>
+          <div className="flex gap-1.5">
+            {['salary','cost','employment','education'].map(c => (
+              <button key={c} onClick={() => setCatFilter(c === catFilter ? null : c)}
+                className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${c === catFilter ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                {{salary:'薪资',cost:'生活',employment:'就业',education:'教育'}[c]}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <div className="flex-1 overflow-y-auto space-y-3">
-        {filtered.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">暂无匹配数据</p>
-        ) : filtered.map(atom => (
-          <div key={atom.id} className="rounded-xl border border-border/40 bg-card p-4 shadow-sm">
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="text-sm font-semibold text-foreground">{atom.title}</h3>
-              <span className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium ${atom.trustLevel === 'official' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                {atom.trustLevel === 'official' ? '官方数据' : 'AI推断'}
-              </span>
+        {/* Data Cards */}
+        <div className="space-y-4">
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center py-20 text-center">
+              <Search className="mb-3 h-8 w-8 text-muted-foreground/20" />
+              <p className="text-sm text-muted-foreground">没有匹配的数据</p>
+              <p className="mt-1 text-xs text-muted-foreground/60">试试其他关键词</p>
             </div>
-            <p className="text-xs leading-relaxed text-muted-foreground mb-2">{atom.content}</p>
-            {atom.data && typeof atom.data === 'object' && Object.keys(atom.data).length > 2 && (
-              <div className="mb-2 rounded-lg bg-secondary/40 px-3 py-2 text-xs">
-                {Object.entries(atom.data).map(([k, v]) => {
-                  if (k === 'source') return null;
-                  if (Array.isArray(v)) {
+          ) : filtered.map(atom => (
+            <div key={atom.id} className="group rounded-2xl border border-border/30 bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-base font-semibold text-foreground">{atom.title}</h3>
+                    {atom.trustLevel === 'official' && (
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">官方数据</span>
+                    )}
+                  </div>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{atom.content}</p>
+                </div>
+              </div>
+
+              {/* Structured data as stat badges */}
+              {atom.data && typeof atom.data === 'object' && (
+                <div className="mb-4 rounded-xl bg-secondary/30 px-4 py-3">
+                  {(() => {
+                    const d = atom.data as any;
                     return (
-                      <div key={k} className="mt-1">
-                        <span className="text-muted-foreground font-medium">{k}：</span>
-                        {v.map((item, i) => {
-                          if (typeof item === 'object' && item) return <span key={i} className="ml-2 text-foreground">{Object.entries(item as Record<string,unknown>).filter(([kk])=>kk!=='source').map(([kk,vv])=>`${kk}:${typeof vv==='number'?vv.toLocaleString():vv}`).join('，')}{i<v.length-1?'；':''}</span>;
-                          return <span key={i} className="ml-2">{String(item)}</span>;
-                        })}
+                      <div className="space-y-2">
+                        {d.nationalAverage && <StatBadge icon="📊" label="全国均薪" value={`¥${Number(d.nationalAverage).toLocaleString()}`} />}
+                        {d.source && <p className="text-[10px] text-muted-foreground/50">来源：{String(d.source)}</p>}
+                        {d.topMajors && <div><span className="text-[10px] font-medium text-muted-foreground tracking-wide">高薪专业 Top5</span><div className="mt-1 flex flex-wrap gap-1.5">{d.topMajors.slice(0,5).map((m:any,i:number)=><span key={i} className="inline-flex items-center gap-1 rounded-lg bg-background/80 px-2.5 py-1 text-xs"><span className="text-[10px] text-muted-foreground">#{i+1}</span><span className="font-medium">{m.name}</span><span className="tabular-nums text-primary">¥{Number(m.salary).toLocaleString()}</span></span>)}</div></div>}
+                        {d.citySalaries && <div><span className="text-[10px] font-medium text-muted-foreground tracking-wide">城市薪资 Top5</span><div className="mt-1 flex flex-wrap gap-1.5">{Object.entries(d.citySalaries as Record<string,number>).slice(0,5).map(([c,s])=> <span key={c} className="inline-flex items-center gap-1 rounded-lg bg-background/80 px-2.5 py-1 text-xs"><MapPin className="h-3 w-3 text-muted-foreground/50"/>{c}<span className="tabular-nums font-medium text-primary">¥{s.toLocaleString()}</span></span>)}</div></div>}
+                        {d.greenMajors && <div><span className="text-[10px] font-medium text-muted-foreground tracking-wide">绿牌专业</span><div className="mt-1 flex flex-wrap gap-1">{d.greenMajors.map((m:string)=><span key={m} className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">{m}</span>)}</div></div>}
                       </div>
                     );
-                  }
-                  return (
-                    <div key={k} className="flex justify-between">
-                      <span className="text-muted-foreground">{k}</span>
-                      <span className="font-medium text-foreground">{typeof v === 'number' ? v.toLocaleString() : String(v)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <div className="flex items-center gap-2 flex-wrap">
-              {atom.tags.map(t => <span key={t} className="rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">{t}</span>)}
-              {atom.sourceUrl?.startsWith('http') && (
-                <a href={atom.sourceUrl} target="_blank" rel="noopener noreferrer" className="ml-auto flex items-center gap-1 text-[11px] text-primary hover:underline"><ExternalLink className="h-3 w-3"/>来源</a>
+                  })()}
+                </div>
               )}
+
+              {/* Tags & Source */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {atom.tags.map(t => (
+                  <span key={t} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">{t}</span>
+                ))}
+                {atom.sourceUrl?.startsWith('http') && (
+                  <a href={atom.sourceUrl} target="_blank" rel="noopener noreferrer"
+                    className="ml-auto inline-flex items-center gap-1 rounded-lg border border-border/40 px-3 py-1 text-xs text-foreground/60 transition-colors hover:border-primary/30 hover:text-primary">
+                    <ExternalLink className="h-3 w-3" />查看来源
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
