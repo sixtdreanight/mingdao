@@ -2,14 +2,15 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { Sparkles, UserCircle, Database, Library, ChevronLeft, ChevronRight, History, User, Map, BarChart3 } from 'lucide-react';
+import { Sparkles, UserCircle, Database, Library, ChevronLeft, ChevronRight, History, User, Map, BarChart3, GitBranch } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { id: 'coach',     icon: Sparkles,    label: 'AI规划师', en: 'Coach' },
   { id: 'profile',   icon: UserCircle,  label: '个人画像', en: 'Profile' },
   { id: 'routes',    icon: Map,         label: '成就图鉴', en: 'Routes' },
-  { id: 'explore',   icon: BarChart3,   label: '数据对比', en: 'Explore' },
+  { id: 'explore',   icon: BarChart3,   label: '数据对比', en: 'Compare' },
+  { id: 'sim',       icon: GitBranch,   label: '路径模拟', en: 'Simulate' },
   { id: 'knowledge', icon: Database,    label: '数据库',   en: 'Knowledge' },
   { id: 'resources', icon: Library,     label: '资源库',   en: 'Resources' },
 ] as const;
