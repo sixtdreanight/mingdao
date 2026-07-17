@@ -7,11 +7,11 @@ import { searchAtoms } from '@/data/knowledge';
 
 const QUERIES: { kw: string; cats: string[] }[] = [
   { kw: '薪资', cats: ['salary'] },
-  { kw: '生活成本', cats: ['cost'] },
   { kw: '就业', cats: ['employment'] },
   { kw: '教育', cats: ['education'] },
-  { kw: '趋势', cats: ['trend'] },
-  { kw: '政策', cats: ['policy'] },
+  { kw: '生活成本', cats: ['cost'] },
+  { kw: '2025', cats: ['salary','employment'] },
+  { kw: '行业', cats: ['salary','employment','trend'] },
 ];
 
 function StatBadge({ label, value, icon }: { label: string; value: string; icon?: string }) {
@@ -91,10 +91,10 @@ export function KnowledgeBrowser() {
               className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${sortBy === 'newest' ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
               {sortBy === 'newest' ? '🕐 最新' : '📌 默认'}
             </button>
-            {['salary','cost','employment','education'].map(c => (
+            {['salary','cost','employment','education','trend','policy','life'].map(c => (
               <button key={c} onClick={() => setCatFilter(c === catFilter ? null : c)}
                 className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${c === catFilter ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
-                {{salary:'薪资',cost:'生活',employment:'就业',education:'教育'}[c]}
+                {{salary:'薪资',cost:'生活',employment:'就业',education:'教育',trend:'趋势',policy:'政策',life:'工作生活'}[c]}
               </button>
             ))}
           </div>
