@@ -6,6 +6,7 @@ const atomModules: Record<string, () => Promise<{ default: KnowledgeAtom }>> = {
   'salary-by-major-2025': () => import('./salary/salary-by-major-2025'),
   'all-majors-salary-2025': () => import('./salary/all-majors-2025'),
   'complete-majors-db-2025': () => import('./salary/complete-majors-database'),
+  'massive-salary-data-2025': () => import('./salary/massive-salary-data'),
   'nbs-industry-salary-2025': () => import('./salary/nbs-industry-salary-2025'),
   // === COST ===
   'complete-city-costs-2024': () => import('./cost/complete-city-costs-2024'),

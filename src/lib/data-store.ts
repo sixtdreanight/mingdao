@@ -27,13 +27,16 @@ export function getByCategory(cat: string): KnowledgeAtom[] {
 
 /** 获取薪资排行（从知识原子中提取） */
 export function getSalaryRanking(): { name: string; salary: number; industry: string }[] {
-  const atom = _atoms.find(a => a.id === 'complete-majors-db-2025');
+  // Try massive data first, fall back to complete db
+  let atom = _atoms.find(a => a.id === 'massive-salary-data-2025');
+  if (!atom) atom = _atoms.find(a => a.id === 'complete-majors-db-2025');
   if (!atom?.data) return [];
-  const disciplines = (atom.data as any).disciplines;
+  const disciplines = (atom.data as any).allMajors || (atom.data as any).disciplines;
+  if (!disciplines) return [];
   const all: { name: string; salary: number; industry: string }[] = [];
-  for (const [field, info] of Object.entries(disciplines) as [string, any][]) {
-    if (info.majors) {
-      for (const [name, salary] of Object.entries(info.majors) as [string, any][]) {
+  for (const [field, majors] of Object.entries(disciplines) as [string, any][]) {
+    if (majors && typeof majors === 'object') {
+      for (const [name, salary] of Object.entries(majors) as [string, any][]) {
         all.push({ name, salary: Number(salary), industry: String(field) });
       }
     }
