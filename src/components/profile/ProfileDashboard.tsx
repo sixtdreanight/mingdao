@@ -5,13 +5,25 @@ import type { UserProfile } from '@/types';
 import { ProfileCard } from '@/components/chat/ProfileCard';
 import { CompetencyCard } from '@/components/chat/CompetencyCard';
 import type { OccupationCompetencyProfile, StudentCompetencyProfile, SelfAssessment, ProficiencyLevel } from '@/types/competency';
-import { batchMatch } from '@/lib/resource-matcher';
 import { CareerTest } from './CareerTest';
 import { PersonalityTest } from './PersonalityTest';
 import { toast } from '@/components/ui/toast';
+import { addActivity, getStats } from '@/lib/activity-store';
 import { Beaker, Brain } from 'lucide-react';
 
-type TestType = 'career' | 'mbti' | null;
+type TestType = 'career' | 'bigfive' | null;
+
+function isValidCompetencyProfile(v: unknown): v is OccupationCompetencyProfile {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return typeof o.occupation === 'string' && Array.isArray(o.competencies);
+}
+
+function isValidStudentCompetency(v: unknown): v is StudentCompetencyProfile {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return Array.isArray(o.selfAssessments);
+}
 
 export function ProfileDashboard() {
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
@@ -19,8 +31,8 @@ export function ProfileDashboard() {
   const [studentCompetency, setStudentCompetency] = useState<StudentCompetencyProfile>({ selfAssessments: [], inferredSignals: [] });
   const [showCompetency, setShowCompetency] = useState(false);
   const [competencyLoading, setCompetencyLoading] = useState(false);
+  const [planLoading, setPlanLoading] = useState(false);
   const [competencyOccupation, setCompetencyOccupation] = useState('');
-  const [activityCount, setActivityCount] = useState(0);
   const [activeTest, setActiveTest] = useState<TestType>(null);
 
   useEffect(() => {
@@ -29,17 +41,14 @@ export function ProfileDashboard() {
         const saved = localStorage.getItem('mingdao-competency');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed.studentCompetency) setStudentCompetency(parsed.studentCompetency);
-          if (parsed.competencyProfile) { setCompetencyProfile(parsed.competencyProfile); setShowCompetency(true); }
+          if (isValidStudentCompetency(parsed.studentCompetency)) setStudentCompetency(parsed.studentCompetency);
+          if (isValidCompetencyProfile(parsed.competencyProfile)) { setCompetencyProfile(parsed.competencyProfile); setShowCompetency(true); }
         }
         const profileSaved = localStorage.getItem('mingdao-profile');
         if (profileSaved) setProfile(JSON.parse(profileSaved));
-        const activities = JSON.parse(localStorage.getItem('mingdao-activity') || '[]');
-        setActivityCount(activities.length);
       } catch { /* ignore */ }
     };
     load();
-    // 监听自定义事件 — ChatInterface 写入时触发
     window.addEventListener('profile-updated', load);
     window.addEventListener('storage', load);
     return () => {
@@ -50,13 +59,13 @@ export function ProfileDashboard() {
 
   const handleAssess = (competencyId: string, level: ProficiencyLevel, evidence: string) => {
     setStudentCompetency((prev) => {
-      const existing = prev.selfAssessments.findIndex((a) => a.competencyId === competencyId);
+      const existingIdx = prev.selfAssessments.findIndex((a) => a.competencyId === competencyId);
       const assessment: SelfAssessment = { competencyId, currentLevel: level, evidence, lastUpdated: new Date().toISOString() };
-      const selfAssessments = existing >= 0
-        ? prev.selfAssessments.map((a, i) => (i === existing ? assessment : a))
+      const selfAssessments = existingIdx >= 0
+        ? prev.selfAssessments.map((a, i) => (i === existingIdx ? assessment : a))
         : [...prev.selfAssessments, assessment];
       const updated = { ...prev, selfAssessments };
-      localStorage.setItem('mingdao-competency', JSON.stringify({ studentCompetency: updated, competencyProfile }));
+      try { localStorage.setItem('mingdao-competency', JSON.stringify({ studentCompetency: updated, competencyProfile })); } catch {}
       return updated;
     });
   };
@@ -68,17 +77,22 @@ export function ProfileDashboard() {
     try {
       const res = await fetch('/api/competency', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ occupation }) });
       const json = await res.json();
-      if (json.success && json.data) {
+      if (json.success && isValidCompetencyProfile(json.data)) {
         setCompetencyProfile(json.data);
         setStudentCompetency((prev) => {
           const updated = { ...prev, targetCareer: occupation };
-          localStorage.setItem('mingdao-competency', JSON.stringify({ studentCompetency: updated, competencyProfile: json.data }));
+          try { localStorage.setItem('mingdao-competency', JSON.stringify({ studentCompetency: updated, competencyProfile: json.data })); } catch {}
           return updated;
         });
         setShowCompetency(true);
+        addActivity({ type: 'competency', title: `生成能力画像: ${occupation}` });
         toast('success', '能力画像已生成');
+      } else {
+        toast('error', json.error || '生成失败，请稍后重试');
       }
-    } catch { /* ignore */ }
+    } catch {
+      toast('error', '网络错误，请稍后重试');
+    }
     finally { setCompetencyLoading(false); }
   };
 
@@ -97,18 +111,20 @@ export function ProfileDashboard() {
             };
             setProfile(updated);
             localStorage.setItem('mingdao-profile', JSON.stringify(updated));
+            addActivity({ type: 'profile_update', title: '完成职业兴趣测评' });
             setActiveTest(null);
             toast('success', '兴趣测评结果已保存');
           }}
           onClose={() => setActiveTest(null)}
         />
       )}
-      {activeTest === 'mbti' && (
+      {activeTest === 'bigfive' && (
         <PersonalityTest
-          onComplete={(mbti) => {
-            const updated = { ...profile, lifestyle: [...new Set([...(profile.lifestyle || []), `MBTI:${mbti}`])] };
+          onComplete={(desc) => {
+            const updated = { ...profile, lifestyle: [...new Set([...(profile.lifestyle || []), `BigFive:${desc}`])] };
             setProfile(updated);
             localStorage.setItem('mingdao-profile', JSON.stringify(updated));
+            addActivity({ type: 'profile_update', title: '完成大五人格测评' });
             setActiveTest(null);
             toast('success', '性格测评结果已保存');
           }}
@@ -117,11 +133,11 @@ export function ProfileDashboard() {
       )}
       {!activeTest && (
         <div className="mb-6 space-y-2">
-          <button onClick={() => setActiveTest('mbti')}
+          <button onClick={() => setActiveTest('bigfive')}
             className="flex w-full items-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10">
             <Brain className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-sm font-medium text-foreground">Big Five 人格测评</p>
+              <p className="text-sm font-medium text-foreground">大五人格测评</p>
               <p className="text-xs text-muted-foreground">50 题 · 科学人格模型，了解你的性格与职业匹配</p>
             </div>
           </button>
@@ -151,8 +167,7 @@ export function ProfileDashboard() {
               profile={competencyProfile}
               selfAssessments={studentCompetency.selfAssessments}
               onAssess={handleAssess}
-              onViewResources={() => {}}
-              onRefresh={() => { setShowCompetency(false); setCompetencyProfile(null); setCompetencyOccupation(''); localStorage.removeItem('mingdao-competency'); }}
+              onRefresh={() => { setShowCompetency(false); setCompetencyProfile(null); setCompetencyOccupation(''); try { localStorage.removeItem('mingdao-competency'); } catch {} }}
             />
           ) : (
             <div className="rounded-lg border border-dashed border-border/60 bg-card/40 px-4 py-3">
@@ -161,10 +176,14 @@ export function ProfileDashboard() {
                 <input
                   value={competencyOccupation}
                   onChange={(e) => setCompetencyOccupation(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleGenerate(); }}
+                  onKeyDown={(e) => {
+                    if ((e.nativeEvent as KeyboardEvent).isComposing || (e as unknown as { keyCode: number }).keyCode === 229) return;
+                    if (e.key === 'Enter') handleGenerate();
+                  }}
                   placeholder="输入目标职业，如：律师..."
                   className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-xs"
                   disabled={competencyLoading}
+                  aria-label="目标职业"
                 />
                 <button
                   onClick={handleGenerate}
@@ -183,9 +202,9 @@ export function ProfileDashboard() {
       <div className="mt-8">
         <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">成长轨迹</h3>
         <div className="grid grid-cols-3 gap-3">
-          <StatCard label="对话次数" value={String(activityCount)} />
+          <StatCard label="对话次数" value={String(getStats().totalConversations)} />
           <StatCard label="能力评估" value={String(studentCompetency.selfAssessments.length)} />
-          <StatCard label="资源收藏" value="—" />
+          <StatCard label="资源收藏" value={String(getStats().resourceSaves)} />
         </div>
       </div>
 
@@ -198,24 +217,33 @@ export function ProfileDashboard() {
           </div>
           <button
             onClick={async () => {
-              setCompetencyLoading(true);
+              setPlanLoading(true);
               try {
                 const res = await fetch('/api/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile }) });
                 const json = await res.json();
-                if (json.success && json.data?.routes) {
+                if (json.success && json.data?.routes && Array.isArray(json.data.routes)) {
                   const { saveRoutes } = await import('@/lib/route-store');
-                  const { default: router } = await import('next/navigation');
                   saveRoutes(json.data.routes);
                   window.dispatchEvent(new Event('routes-updated'));
+                  addActivity({ type: 'profile_update', title: `生成 ${json.data.routes.length} 条路线` });
                   toast('success', `已生成 ${json.data.routes.length} 条路线，在成就图鉴中查看`);
+                  // navigate to routes tab
+                  const current = new URLSearchParams(window.location.search);
+                  current.set('tab', 'routes');
+                  window.history.pushState(null, '', `/main?${current.toString()}`);
+                  window.dispatchEvent(new Event('popstate'));
+                } else {
+                  toast('error', json.error || '生成失败，请稍后重试');
                 }
-              } catch { /* ignore */ }
-              finally { setCompetencyLoading(false); }
+              } catch {
+                toast('error', '网络错误，请稍后重试');
+              }
+              finally { setPlanLoading(false); }
             }}
-            disabled={competencyLoading}
+            disabled={planLoading}
             className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-30"
           >
-            {competencyLoading ? '生成中...' : '生成路线图'}
+            {planLoading ? '生成中...' : '生成路线图'}
           </button>
         </div>
       </div>

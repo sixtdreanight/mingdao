@@ -5,16 +5,15 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { ContentRouter } from '@/components/layout/ContentRouter';
 import { HistoryDrawer } from '@/components/history/HistoryDrawer';
 import { WelcomeGuide } from '@/components/onboarding/WelcomeGuide';
+import { getActivities, addActivity } from '@/lib/activity-store';
 
 function MainContent() {
   const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
-    const activities = JSON.parse(localStorage.getItem('mingdao-activity') || '[]');
+    const activities = getActivities();
     if (activities.length === 0) {
-      import('@/lib/activity-store').then((m) => {
-        m.addActivity({ type: 'first_visit', title: '首次使用明道', detail: '开启职业探索之旅' });
-      });
+      addActivity({ type: 'first_visit', title: '首次使用明道', detail: '开启职业探索之旅' });
     }
   }, []);
 

@@ -15,7 +15,9 @@ import { CareerExplorer } from '@/components/explore/CareerExplorer';
  */
 export function ContentRouter() {
   const params = useSearchParams();
-  const tab = params.get('tab') || 'coach';
+  const VALID_TABS = new Set(['coach', 'profile', 'knowledge', 'resources', 'routes', 'explore', 'sim', 'careers']);
+  const raw = params.get('tab') || 'coach';
+  const tab = VALID_TABS.has(raw) ? raw : 'coach';
 
   return (
     <div className="flex-1 overflow-hidden">

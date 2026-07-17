@@ -31,6 +31,9 @@ export function ResourceBrowser() {
     if (next.has(url)) next.delete(url); else next.add(url);
     setSaved(next);
     localStorage.setItem('mingdao-resource-bookmarks', JSON.stringify([...next]));
+    import('@/lib/activity-store').then(({ addActivity }) => {
+      addActivity({ type: 'resource_save', title: next.has(url) ? url : '', detail: '切换资源收藏' });
+    });
   };
 
   const toggleCat = (id: string) => {

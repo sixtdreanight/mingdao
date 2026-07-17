@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Search, ArrowUpDown, Bookmark, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { loadAllData, getSalaryRanking, getNationalAvg, hasLoadError } from '@/lib/data-store';
 
 interface Row { name: string; salary: number; field: string; id: string }
 const PAGE_SIZE = 50;
@@ -15,21 +16,33 @@ export function KnowledgeBrowser() {
     try { return new Set(JSON.parse(localStorage.getItem('mingdao-bookmarks')||'[]')); } catch { return new Set(); }
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [avg, setAvg] = useState(6435);
 
   useEffect(() => {
-    fetch('/data/salaries.json')
-      .then(r => r.json())
-      .then(d => {
-        const rows = (d.data || []).map((r: any) => ({ ...r, id: `m-${r.name}` }));
+    let cancelled = false;
+    loadAllData().then((ok) => {
+      if (cancelled) return;
+      if (ok) {
+        const rows = getSalaryRanking()
+          .filter((r): r is Row => typeof r.name === 'string' && typeof r.salary === 'number' && typeof r.field === 'string')
+          .map(r => ({ ...r, id: `m-${r.name}` }));
         setAllRows(rows);
-      })
-      .finally(() => setLoading(false));
+        setAvg(getNationalAvg() || 6435);
+      } else {
+        setError(hasLoadError());
+      }
+      setLoading(false);
+    }).catch(() => { if (!cancelled) { setError(true); setLoading(false); }});
+    return () => { cancelled = true; };
   }, []);
 
   const toggleBm = (id: string) => {
     const next = new Set(bookmarks); next.has(id) ? next.delete(id) : next.add(id);
     setBookmarks(next); localStorage.setItem('mingdao-bookmarks', JSON.stringify([...next]));
   };
+
+  const allFields = useMemo(() => [...new Set(allRows.map(r => r.field))], [allRows]);
 
   const filtered = useMemo(() => {
     let result = search ? allRows.filter(r => r.name.includes(search) || r.field.includes(search)) : allRows;
@@ -39,10 +52,9 @@ export function KnowledgeBrowser() {
 
   const pages = Math.ceil(filtered.length / PAGE_SIZE);
   const pageRows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const fields = [...new Set(filtered.map(r => r.field))];
-  const avg = 6435;
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"/></div>;
+  if (error) return <div className="flex flex-col items-center justify-center h-64 gap-3"><p className="text-sm text-muted-foreground">数据加载失败</p><button onClick={() => { setError(false); setLoading(true); loadAllData().then(ok => { if (ok) { setAllRows(getSalaryRanking().map(r => ({ ...r, id: `m-${r.name}` }))); setAvg(getNationalAvg() || 6435); } else setError(hasLoadError()); setLoading(false); }); }} className="text-xs text-primary hover:underline">重试</button></div>;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -51,7 +63,7 @@ export function KnowledgeBrowser() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-xl font-semibold text-foreground">数据库</h2>
-            <p className="text-xs text-muted-foreground">{filtered.length} 个专业 · {fields.length} 个学科 · 数据来源麦可思</p>
+            <p className="text-xs text-muted-foreground">{filtered.length} 个专业 · {allFields.length} 个学科 · 数据来源麦可思</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={()=>setSortDir(d=>d==='asc'?'desc':'asc')} className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
@@ -67,10 +79,10 @@ export function KnowledgeBrowser() {
         {/* Quick filters */}
         <div className="flex gap-1.5 flex-wrap mb-4">
           <button onClick={()=>setSearch('')} className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${!search?'bg-foreground text-background':'bg-secondary text-muted-foreground hover:text-foreground'}`}>全部</button>
-          {fields.slice(0,8).map(f => (
+          {allFields.slice(0,8).map(f => (
             <button key={f} onClick={()=>{setSearch(f);setPage(0);}} className={`rounded-full px-2.5 py-1 text-[11px] transition-colors ${search===f?'bg-foreground text-background':'bg-secondary text-muted-foreground hover:text-foreground'}`}>{f}</button>
           ))}
-          {fields.length > 8 && <span className="text-[11px] text-muted-foreground/40 self-center">+{fields.length-8} 更多</span>}
+          {allFields.length > 8 && <span className="text-[11px] text-muted-foreground/40 self-center">+{allFields.length-8} 更多</span>}
         </div>
 
         {/* Table */}

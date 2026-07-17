@@ -1,4 +1,6 @@
+import { memo } from 'react';
 import type { ChatMessage, KnowledgeAtom, WebSource, ChatSource } from '@/types';
+import { safeMarkdown } from '@/lib/utils';
 
 interface MessageBubbleProps { message: ChatMessage }
 
@@ -33,11 +35,9 @@ function SourceLink({ source }: { source: ChatSource }) {
   );
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+function MessageBubbleInner({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
-  const html = message.content
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
-    .replace(/\n/g, '<br/>');
+  const html = safeMarkdown(message.content);
 
   const realSources = (message.sources || []).filter(s => {
     const url = isKnowledgeAtom(s) ? s.sourceUrl : s.url;
@@ -74,3 +74,5 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     </div>
   );
 }
+
+export const MessageBubble = memo(MessageBubbleInner);

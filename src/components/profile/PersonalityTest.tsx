@@ -38,7 +38,7 @@ const QUESTIONS = [
   { id:37, dim:'A', text:'我设身处地为他人着想' }, { id:38, dim:'A', rev:true, text:'我容易批评指责别人' },
   { id:39, dim:'A', text:'我会真诚地赞美他人' }, { id:40, dim:'A', text:'我让大家感到自在和被接纳' },
 
-  // N: 情绪稳定性 (10题，反向计分即低N=高稳定性)
+  // N: 情绪稳定性 (10题：直接分=神经质，高分=焦虑，取反后高分=稳定)
   { id:41, dim:'N', rev:true, text:'我很少感到焦虑或担心' },
   { id:42, dim:'N', text:'我容易紧张和压力大' }, { id:43, dim:'N', rev:true, text:'大部分时间我心情愉快放松' },
   { id:44, dim:'N', text:'我情绪波动比较大' }, { id:45, dim:'N', rev:true, text:'面对压力我能保持冷静' },
@@ -93,7 +93,9 @@ export function PersonalityTest({ onComplete, onClose }: Props) {
     }
     const scores: Record<string, number> = {};
     for (const [d, v] of Object.entries(dims)) {
-      scores[d] = Math.round((v.total / (v.count * 5)) * 100);
+      // 归一化到 0-100：最小值=count*1，最大值=count*5
+      // score = (total - count) / (count * 4) * 100，中性=50
+      scores[d] = Math.round(((v.total - v.count) / (v.count * 4)) * 100);
     }
     return scores;
   };
@@ -107,7 +109,7 @@ export function PersonalityTest({ onComplete, onClose }: Props) {
       <div className="p-6 max-w-lg mx-auto">
         <div className="text-center mb-6">
           <p className="text-3xl mb-2">🧬</p>
-          <h3 className="text-lg font-semibold text-foreground mb-1">Big Five 人格画像</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-1">大五人格画像</h3>
         </div>
 
         <div className="space-y-3 mb-6">
@@ -125,14 +127,16 @@ export function PersonalityTest({ onComplete, onClose }: Props) {
           ))}
         </div>
 
-        <div className="mb-6">
-          <p className="text-xs font-medium text-muted-foreground mb-2">推荐职业方向</p>
-          <div className="flex flex-wrap gap-1.5">
-            {careers.map(c => (
-              <span key={c} className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">{c}</span>
-            ))}
+        {careers.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs font-medium text-muted-foreground mb-2">与你特质相近的常见方向（仅参考）</p>
+            <div className="flex flex-wrap gap-1.5">
+              {careers.map(c => (
+                <span key={c} className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">{c}</span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex gap-2">
           <button onClick={() => {

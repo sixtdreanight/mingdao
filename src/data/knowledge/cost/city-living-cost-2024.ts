@@ -14,7 +14,7 @@ const atom: KnowledgeAtom = {
       '北京': { monthlyConsumption: 4146, housingPct: 38.7, disposableIncome: 85415 },
       '杭州': { monthlyConsumption: 3248, housingPct: 27.8, disposableIncome: 67013 },
       '深圳': { monthlyConsumption: 2681, housingPct: 27.4, disposableIncome: 65000 },
-      '广州': { monthlyConsumption: 2681, housingPct: 27.4, disposableIncome: 65000 },
+      '广州': { monthlyConsumption: 2681, housingPct: 27.4, disposableIncome: 55000 },
       '南京': { monthlyConsumption: 2737, housingPct: 29.1, disposableIncome: 58000 },
       '武汉': { monthlyConsumption: 2069, housingPct: 22.2, disposableIncome: 44000 },
       '长沙': { monthlyConsumption: 2007, housingPct: 21.2, disposableIncome: 43000 },

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { MapPin, ArrowUp, ArrowDown, Info } from 'lucide-react';
-import { loadAllData, getSalaryRanking, getCityCosts } from '@/lib/data-store';
+import { MapPin, ArrowUp, ArrowDown, Info, AlertTriangle, RotateCcw } from 'lucide-react';
+import { loadAllData, getSalaryRanking, getCityCosts, getNationalAvg, hasLoadError } from '@/lib/data-store';
 
 const MAJOR_COLORS = ['#10b981','#f59e0b','#3b82f6','#8b5cf6','#ef4444','#06b6d4','#f97316','#6366f1','#14b8a6','#ec4899','#84cc16','#0ea5e9'];
 
@@ -12,16 +12,25 @@ export function SalaryCompare() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selCity, setSelCity] = useState('上海');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [avg, setAvg] = useState(6435);
+  const [mode, setMode] = useState<'salary' | 'purchasing'>('salary');
 
-  useEffect(() => {
-    loadAllData().then(() => {
-      setMajors(getSalaryRanking());
-      setCities(getCityCosts().slice(0, 12).map(c => ({ name: c.name, monthly: Math.round(c.income / 12) })));
-      const all = getSalaryRanking();
-      setSelected(new Set(all.slice(0, 6).map(m => m.name)));
+  const load = () => {
+    setLoading(true); setError(false);
+    loadAllData().then(ok => {
+      if (ok) {
+        const m = getSalaryRanking();
+        setMajors(m);
+        setCities(getCityCosts().slice(0, 12).map(c => ({ name: c.name, monthly: Math.round(c.income / 12) })));
+        setAvg(getNationalAvg() || 6435);
+        if (m.length > 0) setSelected(new Set(m.slice(0, 6).map(x => x.name)));
+      } else { setError(hasLoadError()); }
       setLoading(false);
-    });
-  }, []);
+    }).catch(() => { setError(true); setLoading(false); });
+  };
+
+  useEffect(() => { load(); }, []);
 
   const toggle = (name: string) => {
     const next = new Set(selected);
@@ -33,7 +42,6 @@ export function SalaryCompare() {
   const list = useMemo(() => majors.filter(m => selected.has(m.name)).sort((a,b) => b.salary - a.salary), [majors, selected]);
   const maxVal = Math.max(...list.map(m => m.salary), 1);
   const cityData = cities.find(c => c.name === selCity) || cities[0];
-  const avg = 6435;
 
   if (loading) return <div className="flex items-center justify-center h-full"><div className="skeleton h-64 w-full max-w-2xl rounded-2xl" /></div>;
 

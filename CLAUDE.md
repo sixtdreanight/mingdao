@@ -11,16 +11,20 @@ A career planning tool for Chinese university students. Helps students see the r
 
 ## Tech Stack
 - Next.js 14 App Router + TypeScript strict
-- shadcn/ui + Tailwind CSS (CSS variable theme: terracotta warm palette)
-- Claude API (Anthropic) for chat
+- Tailwind CSS (CSS variable theme: terracotta warm palette)
+- Claude API (Anthropic) / DeepSeek for chat
 - Python knowledge crawler for data collection
 
 ## Key Files
-- `src/app/page.tsx` — Top nav tabs (对话/资源库)
+- `src/app/page.tsx` — Landing page with hero + feature grid
+- `src/app/main/page.tsx` — Main app shell with sidebar navigation (8 modules)
 - `src/components/chat/ChatInterface.tsx` — Main coaching chat
 - `src/components/chat/ProfileCard.tsx` — 8-dimension role card
-- `src/components/chat/ResourceBrowser.tsx` — Full-page resource directory
+- `src/components/chat/ResourceBrowser.tsx` — Full-page resource directory (310+ links)
+- `src/components/layout/AppSidebar.tsx` — Side navigation with 8 tabs
 - `src/lib/rag.ts` — RAG retrieval + system prompt
+- `src/lib/planner.ts` — Route generation from profile
+- `src/lib/data-store.ts` — Unified data loading from public/data/*.json
 - `src/data/resources.ts` — 310+ curated resource links (29 categories)
 - `src/data/knowledge/` — Atomic knowledge facts (7 dimensions)
 
@@ -29,6 +33,7 @@ A career planning tool for Chinese university students. Helps students see the r
 npm run dev        # Development server
 npm run build      # Production build
 npm run typecheck  # tsc --noEmit
+npm run test       # vitest
 ```
 
 ## Design System

@@ -12,11 +12,22 @@ interface HistoryDrawerProps {
 export function HistoryDrawer({ open, onClose }: HistoryDrawerProps) {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [search, setSearch] = useState('');
-  const stats = getStats();
+  const [stats, setStats] = useState({ totalConversations: 0, competencyAssessments: 0, resourceSaves: 0 });
 
   useEffect(() => {
-    if (open) setActivities(getActivities());
+    if (open) {
+      setActivities(getActivities());
+      setStats(getStats());
+    }
   }, [open]);
+
+  // Esc 关闭 + focus trap
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onClose]);
 
   const filtered = search.trim()
     ? activities.filter((a) => a.title.includes(search) || (a.detail || '').includes(search))

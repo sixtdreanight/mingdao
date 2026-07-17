@@ -159,7 +159,7 @@ function getAnthropic(): Anthropic {
 async function chatAnthropic(opts: ChatOptions): Promise<ChatResult> {
   const client = getAnthropic();
   const response = await client.messages.create({
-    model: opts.model || 'claude-sonnet-4-20250514',
+    model: opts.model || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
     max_tokens: opts.maxTokens ?? 2048,
     temperature: opts.temperature,
     system: opts.systemPrompt,
@@ -175,7 +175,7 @@ async function chatAnthropic(opts: ChatOptions): Promise<ChatResult> {
 async function* streamAnthropic(opts: ChatOptions): AsyncGenerator<string> {
   const client = getAnthropic();
   const stream = client.messages.stream({
-    model: opts.model || 'claude-sonnet-4-20250514',
+    model: opts.model || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
     max_tokens: opts.maxTokens ?? 2048,
     temperature: opts.temperature,
     system: opts.systemPrompt,

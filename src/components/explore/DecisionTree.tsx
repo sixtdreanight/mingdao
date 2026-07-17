@@ -41,59 +41,32 @@ const TREE: Node[] = [
   },
 ];
 
-const PATHS: Record<string, { title: string; desc: string; steps: string[]; color: string }> = {
-  '就业路径_高薪导向_高压适应': {
-    title: '大厂技术岗 / 投行 / 咨询',
-    desc: '高薪但高强度，适合野心大、抗压强、追求快速财富积累的你。',
-    steps: ['大三暑期实习（大厂/投行）','毕业前拿到return offer','入职2-3年快速晋升','5年后可转向管理或创业'],
-    color: '#ef4444',
-  },
-  '就业路径_高薪导向_中压适应': {
-    title: '外企研发 / 金融科技 / 产品经理',
-    desc: '薪资可观、节奏可控，外企文化和金融科技是当前高性价比选择。',
-    steps: ['提升英语+技术栈','大三暑期实习（外企/FinTech）','校招或社招入职','3-5年积累后跳槽涨薪'],
-    color: '#f59e0b',
-  },
-  '就业路径_平衡导向_中压适应': {
-    title: '国企技术岗 / 银行科技部 / 运营商',
-    desc: '稳定、福利好、加班少，适合追求生活质量和工作平衡的你。',
-    steps: ['关注国企/银行校招时间线','准备行测+专业笔试','通过面试入职','享受稳定发展+副业探索'],
-    color: '#10b981',
-  },
-  '升学路径_高薪导向_高压适应': {
-    title: '985/211 硕博 → 科研/大厂算法',
-    desc: '学历门槛高但回报可观，AI/芯片方向硕士年薪可达40万+。',
-    steps: ['大二大三准备考研（408/数学一）','考上985/211目标院校','研究生期间刷论文/刷题/实习','校招拿SP offer'],
-    color: '#8b5cf6',
-  },
-  '升学路径_成长导向_中压适应': {
-    title: '跨专业考研 → 复合型人才',
-    desc: '本科学历不够用？跨考热门专业，打造独特竞争力。',
-    steps: ['确定目标专业和院校','制定12个月复习计划','参加考研（12月）','复试+调剂，上岸后深耕'],
-    color: '#06b6d4',
-  },
-  '留学路径_高薪导向_高压适应': {
-    title: '美国TOP50 / 英国G5 CS硕士',
-    desc: '投入高（50-80万）回报高，STEM专业3年OPT留美工作机会。',
-    steps: ['大二准备托福/GRE','大三申请+套磁','拿到offer+签证','赴美读研→硅谷/华尔街就业'],
-    color: '#3b82f6',
-  },
-  '体制路径_稳定导向_中压适应': {
-    title: '公务员 / 选调生 / 事业单位',
-    desc: '铁饭碗，社会地位高，适合追求稳定和公共服务的你。计算机专业在信息化岗位需求大。',
-    steps: ['关注国考/省考/选调公告','准备行测+申论（6个月）','参加笔试+面试+体检','入职+基层锻炼后定岗'],
-    color: '#6366f1',
-  },
-};
+/** 基于选择组合动态生成描述，替代预设推荐话术 */
+function composeResult(choices: string[]): { title: string; steps: string[]; color: string } {
+  const [direction, priority, pressure] = choices;
 
-function fallbackPath(key: string): { title: string; desc: string; steps: string[]; color: string } {
-  return { title: '定制化路径', desc: '你的选择组合比较独特。建议在AI规划师中详细讨论，我们会为你量身定制路线。', steps: ['在AI规划师中详细描述你的情况','AI根据你的画像生成个性化路线','在成就图鉴中追踪进度'], color: '#6b7280' };
+  // 方向模板
+  const dirMap: Record<string, { title: string; steps: string[]; color: string }> = {
+    '就业路径': { title: '直接就业', steps: ['大三暑期实习', '校招/社招投递', '入职成长'], color: '#ef4444' },
+    '升学路径': { title: '考研深造', steps: ['确定目标院校', '12个月备考', '初试+复试', '研究生阶段积累'], color: '#8b5cf6' },
+    '留学路径': { title: '出国留学', steps: ['语言考试+选校', '申请+文书', '拿到offer+签证', '海外就读+就业'], color: '#3b82f6' },
+    '体制路径': { title: '考公/考编', steps: ['关注公告时间', '行测+申论备考', '笔试+面试', '入职+基层锻炼'], color: '#6366f1' },
+  };
+
+  const base = dirMap[direction] || { title: direction, steps: ['细化目标', '制定计划', '执行+调整'], color: '#6b7280' };
+  const pressureMap: Record<string, string> = { '高压适应': '高强度', '中压适应': '中等压力', '低压偏好': '较轻松节奏' };
+
+  const title = base.title;
+  const steps = base.steps;
+  const color = base.color;
+
+  return { title, steps, color };
 }
 
 export function DecisionTree() {
   const [step, setStep] = useState(0);
   const [choices, setChoices] = useState<string[]>([]);
-  const [result, setResult] = useState<{ title: string; desc: string; steps: string[]; color: string } | null>(null);
+  const [result, setResult] = useState<{ title: string; steps: string[]; color: string } | null>(null);
 
   const handleChoice = (choice: Choice) => {
     const next = [...choices, choice.result];
@@ -101,8 +74,8 @@ export function DecisionTree() {
       setChoices(next);
       setStep(step + 1);
     } else {
-      const key = next.join('_');
-      setResult(PATHS[key] || fallbackPath(key));
+      setChoices(next);
+      setResult(composeResult(next));
     }
   };
 
@@ -116,7 +89,12 @@ export function DecisionTree() {
             🎯
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-2">{result.title}</h2>
-          <p className="text-sm text-muted-foreground mb-8">{result.desc}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            你的选择：{choices.join(' → ')}
+          </p>
+          <p className="text-xs text-muted-foreground mb-8">
+            {`这是一个基于你选择的客观路线框架，具体薪资、门槛和可行性需要到AI规划师中结合你的个人画像验证`}
+          </p>
           <div className="space-y-3 mb-8">
             {result.steps.map((s, i) => (
               <div key={i} className="flex items-center gap-3 rounded-xl border border-border/30 bg-card px-4 py-3 text-sm">
@@ -125,6 +103,7 @@ export function DecisionTree() {
               </div>
             ))}
           </div>
+          <p className="text-[10px] text-muted-foreground/50 mb-4">本模拟仅为路线框架参考，不构成职业建议</p>
           <button onClick={reset} className="inline-flex items-center gap-2 rounded-xl bg-secondary px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors">
             <RefreshCw className="h-4 w-4" /> 重新选择
           </button>

@@ -2,11 +2,9 @@ import type { KnowledgeAtom } from '@/types';
 
 const atomModules: Record<string, () => Promise<{ default: KnowledgeAtom }>> = {
   // === SALARY (2025 official) ===
+  'salary-overview-2024': () => import('./salary/salary-overview-2024'),
   'salary-overview-2025': () => import('./salary/salary-overview-2025'),
-  'salary-by-major-2025': () => import('./salary/salary-by-major-2025'),
-  'all-majors-salary-2025': () => import('./salary/all-majors-2025'),
   'complete-majors-db-2025': () => import('./salary/complete-majors-database'),
-  'massive-salary-data-2025': () => import('./salary/massive-salary-data'),
   'nbs-industry-salary-2025': () => import('./salary/nbs-industry-salary-2025'),
   // === COST ===
   'complete-city-costs-2024': () => import('./cost/complete-city-costs-2024'),
@@ -44,12 +42,21 @@ let cachedAtoms: KnowledgeAtom[] | null = null;
 
 export async function loadAllAtoms(): Promise<KnowledgeAtom[]> {
   if (!cachedAtoms) {
-    const atoms: KnowledgeAtom[] = [];
-    for (const loader of Object.values(atomModules)) {
-      try {
+    const entries = Object.entries(atomModules);
+    const results = await Promise.allSettled(
+      entries.map(async ([slug, loader]) => {
         const mod = await loader();
-        atoms.push(mod.default);
-      } catch { /* skip broken imports */ }
+        return mod.default;
+      })
+    );
+    const atoms: KnowledgeAtom[] = [];
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status === 'fulfilled') {
+        atoms.push(result.value);
+      } else {
+        console.warn(`[loadAllAtoms] Failed to load atom "${entries[i][0]}":`, result.reason);
+      }
     }
     cachedAtoms = atoms;
   }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, UserCircle, Database, Library, ChevronLeft, ChevronRight, History, User, Map, BarChart3, GitBranch, Compass } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -23,13 +23,18 @@ export function AppSidebar({ onOpenHistory }: { onOpenHistory: () => void }) {
   const router = useRouter();
   const params = useSearchParams();
   const activeTab = params.get('tab') || 'coach';
-  const [collapsed, setCollapsed] = useState(() => {
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem('mingdao-sidebar-collapsed');
-      if (saved !== null) return saved === 'true';
-      return window.innerWidth < 768; // 移动端默认折叠
-    } catch { return false; }
-  });
+      if (saved !== null) {
+        setCollapsed(saved === 'true');
+      } else if (window.innerWidth < 768) {
+        setCollapsed(true);
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   const toggleCollapse = () => {
     const next = !collapsed;
@@ -59,6 +64,7 @@ export function AppSidebar({ onOpenHistory }: { onOpenHistory: () => void }) {
           const isActive = activeTab === item.id;
           return (
             <button key={item.id} onClick={() => navigate(item.id, router)}
+              aria-label={item.label}
               className={cn(
                 'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150',
                 isActive

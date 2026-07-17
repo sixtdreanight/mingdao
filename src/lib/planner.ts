@@ -85,8 +85,8 @@ export async function generateRoutes(profile: Partial<UserProfile>): Promise<Rou
   // 2. 本地知识库
   const atoms = await Promise.all([
     searchAtoms('薪资', ['salary'], 3),
-    searchAtoms(profile.major || '', [], 3),
-    searchAtoms(profile.targetCity || '', ['cost'], 2),
+    profile.major ? searchAtoms(profile.major, [], 3) : Promise.resolve([]),
+    profile.targetCity ? searchAtoms(profile.targetCity, ['cost'], 2) : Promise.resolve([]),
   ]);
   const allAtoms = [...new Set(atoms.flat())];
   const atomText = allAtoms.map(a =>
@@ -107,27 +107,58 @@ export async function generateRoutes(profile: Partial<UserProfile>): Promise<Rou
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('Planner returned invalid JSON: ' + text.slice(0, 200));
 
-  const data = JSON.parse(jsonMatch[0]);
-  const routes: Route[] = (data.routes || []).map((r: Record<string, unknown>, i: number) => ({
-    id: `route-${Date.now()}-${i}`,
-    title: String(r.title || ''),
-    overview: String(r.overview || ''),
-    fit: String(r.fit || ''),
-    requirements: Array.isArray(r.requirements) ? r.requirements.map(String) : [],
-    cost: String(r.cost || '暂无数据'),
-    salary: String(r.salary || '暂无可靠数据'),
-    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-    nodes: Array.isArray(r.nodes)
-      ? r.nodes.map((n: Record<string, unknown>, j: number) => ({
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(jsonMatch[0]);
+  } catch {
+    throw new Error('Planner returned unparseable JSON: ' + text.slice(0, 200));
+  }
+
+  const routesList = data.routes;
+  if (!routesList || !Array.isArray(routesList)) {
+    throw new Error('Planner returned no routes array');
+  }
+
+  const routes: Route[] = routesList.map((r: unknown, i: number) => {
+    const o = r && typeof r === 'object' ? (r as Record<string, unknown>) : {};
+    const nodesRaw = o.nodes;
+    const nodes: RouteNode[] = Array.isArray(nodesRaw) && nodesRaw.length > 0
+      ? (nodesRaw as Record<string, unknown>[]).map((n: Record<string, unknown>, j: number) => ({
           id: `node-${Date.now()}-${i}-${j}`,
           label: String(n.label || ''),
-          status: (j === (r.nodes as unknown[]).length - 1 ? 'active' : 'locked') as RouteNode['status'],
+          status: (
+            j === 0 ? 'goal' :
+            j === (nodesRaw as unknown[]).length - 1 ? 'active' :
+            'locked'
+          ) as RouteNode['status'],
           detail: String(n.detail || ''),
         }))
-      : [],
-    sources: webResults.map(r => ({ title: r.title, url: r.url, snippet: r.snippet })),
-    generatedAt: new Date().toISOString(),
-  }));
+      : [];
+
+    // 去重 web 结果作为 sources
+    const seen = new Set<string>();
+    const sources: ChatSource[] = [];
+    for (const w of webResults) {
+      if (!seen.has(w.url)) {
+        seen.add(w.url);
+        sources.push({ title: w.title, url: w.url, snippet: w.snippet });
+      }
+    }
+
+    return {
+      id: `route-${Date.now()}-${i}`,
+      title: String(o.title || ''),
+      overview: String(o.overview || ''),
+      fit: String(o.fit || ''),
+      requirements: Array.isArray(o.requirements) ? o.requirements.map(String) : [],
+      cost: String(o.cost || '暂无数据'),
+      salary: String(o.salary || '暂无可靠数据'),
+      tags: Array.isArray(o.tags) ? o.tags.map(String) : [],
+      nodes,
+      sources,
+      generatedAt: new Date().toISOString(),
+    };
+  });
 
   return routes;
 }

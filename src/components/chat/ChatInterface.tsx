@@ -1,29 +1,62 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import type { ChatMessage, UserProfile } from '@/types';
 import { MessageBubble } from './MessageBubble';
-
 import { extractProfile } from '@/lib/profile-extractor';
+import { addActivity } from '@/lib/activity-store';
+import { hasRoutes as clientHasRoutes } from '@/lib/route-store';
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant', timestamp: new Date().toISOString(),
-  content: `嗨，我是 Career Maze 的决策助手 👋\n\n我的职责不是给你答案，而是帮你**学会判断**一条路适不适合自己。\n\n我们从最简单的开始：\n\n**你现在大几？学什么专业？**`,
+  content: `嗨，我是明道的决策助手 👋\n\n我的职责不是给你答案，而是帮你**学会判断**一条路适不适合自己。\n\n我们从最简单的开始：\n\n**你现在大几？学什么专业？**`,
 };
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    try {
+      const saved = localStorage.getItem('mingdao-messages');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed as ChatMessage[];
+      }
+    } catch { /* ignore */ }
+    return [WELCOME_MESSAGE];
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<Partial<UserProfile>>({});
+  const [profile, setProfile] = useState<Partial<UserProfile>>(() => {
+    try {
+      const saved = localStorage.getItem('mingdao-profile');
+      if (saved) return JSON.parse(saved);
+    } catch { /* ignore */ }
+    return {};
+  });
   const chatEndRef = useRef<HTMLDivElement>(null);
   const streamingRef = useRef<string>('');
+
+  // listen for profile changes from other components
+  useEffect(() => {
+    const load = () => {
+      try {
+        const saved = localStorage.getItem('mingdao-profile');
+        if (saved) setProfile(JSON.parse(saved));
+      } catch { /* ignore */ }
+    };
+    window.addEventListener('profile-updated', load);
+    return () => window.removeEventListener('profile-updated', load);
+  }, []);
+
+  const persistMessages = useCallback((msgs: ChatMessage[]) => {
+    try { localStorage.setItem('mingdao-messages', JSON.stringify(msgs.slice(-50))); } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const handleSend = async () => {
     const text = input.trim(); if (!text || loading) return;
     const userMsg: ChatMessage = { role: 'user', content: text, timestamp: new Date().toISOString() };
-    const newMessages = [...messages, userMsg];
+    const filtered = messages.filter(m => m.content.length > 0);
+    const newMessages = [...filtered, userMsg];
     setMessages(newMessages); setInput(''); setLoading(true);
 
     // 先添加一个空的 assistant 消息，用于流式填充
@@ -35,7 +68,7 @@ export function ChatInterface() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, stream: true }),
+        body: JSON.stringify({ messages: newMessages, hasRoutes: clientHasRoutes() }),
       });
 
       if (!res.ok || !res.body) {
@@ -53,70 +86,88 @@ export function ChatInterface() {
 
         buffer += decoder.decode(value, { stream: true });
 
-        // 检查是否是 sources JSON chunk
-        if (buffer.startsWith('{"type":"sources"')) {
+        // 逐行解析，处理 sources JSON 行
+        while (buffer.includes('\n')) {
           const nl = buffer.indexOf('\n');
-          if (nl > 0) {
+          let line = buffer.slice(0, nl);
+          buffer = buffer.slice(nl + 1);
+
+          // 尝试解析 sources 元数据行
+          if (line.startsWith('{"type":"sources"')) {
             try {
-              const meta = JSON.parse(buffer.slice(0, nl));
+              const meta = JSON.parse(line.trim());
               sources = meta.sources || [];
               if (meta.profile && Object.keys(meta.profile).length > 0) {
                 setProfile(prev => mergeProfile(prev, meta.profile));
               }
-            } catch { /* ignore */ }
-            buffer = buffer.slice(nl + 1);
+            } catch { /* skip malformed line */ }
+            continue;
           }
-        }
 
-        // 检查 [DONE] 标记
-        const doneIdx = buffer.indexOf('\n[DONE]');
-        if (doneIdx >= 0) {
-          streamingRef.current += buffer.slice(0, doneIdx);
-          buffer = '';
-        } else {
-          // 保留最后可能不完整的 UTF-8 字符
-          streamingRef.current += buffer.slice(0, -3);
-          buffer = buffer.slice(-3);
+          // [DONE] 标记
+          if (line.trim() === '[DONE]') break;
+
+          // 普通内容
+          streamingRef.current += line;
+          if (buffer.includes('\n')) streamingRef.current += '\n';
         }
 
         // 更新消息
         setMessages(prev => {
           const updated = [...prev];
-          const last = updated[updated.length - 1];
-          if (last.role === 'assistant') {
-            updated[updated.length - 1] = { ...last, content: streamingRef.current, sources };
+          const lastIdx = updated.length - 1;
+          if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+            updated[lastIdx] = { ...updated[lastIdx], content: streamingRef.current, sources };
           }
           return updated;
         });
       }
 
-      // 最后确保完整内容
+      // 最终状态
+      const finalContent = streamingRef.current + buffer.replace(/^\[DONE\]\s*$/, '');
+      const finalMessages = [...newMessages, {
+        role: 'assistant' as const,
+        content: finalContent || '收到你的消息，但我暂时无法给出完整的回复。请重试。',
+        timestamp: new Date().toISOString(),
+        sources,
+      }];
+      setMessages(finalMessages);
+      persistMessages(finalMessages);
+
+      // 提取画像并合并保存
+      const extractedProfile = extractProfile(finalMessages);
+      let merged: Partial<UserProfile>;
+      try {
+        const stored = JSON.parse(localStorage.getItem('mingdao-profile') || '{}');
+        merged = mergeProfile(stored, extractedProfile);
+      } catch { merged = mergeProfile(profile, extractedProfile); }
+      setProfile(merged);
+      localStorage.setItem('mingdao-profile', JSON.stringify(merged));
+      window.dispatchEvent(new Event('profile-updated'));
+
+      // 记录活动
+      addActivity({ type: 'chat', title: userMsg.content.slice(0, 30), detail: finalContent.slice(0, 60) });
+
+    } catch {
       setMessages(prev => {
         const updated = [...prev];
         const last = updated[updated.length - 1];
-        if (last.role === 'assistant') {
-          updated[updated.length - 1] = { ...last, content: streamingRef.current + buffer.replace('\n[DONE]', ''), sources };
+        // 替换空的 assistant 占位为错误消息（不追加）
+        if (last.role === 'assistant' && last.content === '') {
+          updated[updated.length - 1] = { ...last, content: '网络不稳定，请重试。', timestamp: new Date().toISOString() };
+        } else {
+          updated.push({ role: 'assistant', content: '网络不稳定，请重试。', timestamp: new Date().toISOString() });
         }
         return updated;
       });
-
-      // 提取画像保存到 localStorage
-      const fullContent = streamingRef.current + buffer.replace('\n[DONE]', '');
-      const allMessages = [...newMessages, { role: 'assistant' as const, content: fullContent, timestamp: new Date().toISOString() }];
-      const extractedProfile = extractProfile(allMessages);
-      const merged = mergeProfile(profile, extractedProfile);
-      setProfile(merged);
-      localStorage.setItem('mingdao-profile', JSON.stringify(merged));
-      localStorage.setItem('mingdao-messages', JSON.stringify(allMessages));
-      window.dispatchEvent(new Event('profile-updated'));
-
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: '网络不稳定，请重试。', timestamp: new Date().toISOString() }]);
     }
     finally { setLoading(false); }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.nativeEvent.isComposing || (e as unknown as { keyCode: number }).keyCode === 229) return;
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -131,7 +182,8 @@ export function ChatInterface() {
       <div className="shrink-0 border-t border-border/50 bg-card/60 px-5 py-3 backdrop-blur-sm">
         <div className="flex items-end gap-2">
           <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="输入你的回答..." rows={2}
-            className="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" disabled={loading} />
+            className="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" disabled={loading}
+            aria-label="聊天输入" />
           <button onClick={handleSend} disabled={loading || !input.trim()}
             className="rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-20">发送</button>
         </div>

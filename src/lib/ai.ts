@@ -4,7 +4,7 @@ import { buildSystemPrompt, searchRelevantAtoms } from './rag';
 import { chatStream } from './ai-client';
 import { searchWeb } from './web-search';
 import { getStage, nextMissingDimension, profileFillCount } from './session';
-import { hasRoutes } from './route-store';
+/* Note: hasRoutes is client-only (localStorage); accepted from request body */
 
 const MAX_MESSAGES = 30;
 const KEEP_RECENT = 20;
@@ -16,7 +16,12 @@ function windowMessages(
   if (filtered.length <= MAX_MESSAGES) {
     return filtered.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
   }
-  return filtered.slice(-KEEP_RECENT).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+  const win = filtered.slice(-KEEP_RECENT).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+  // Anthropic requires first message to be user; trim leading assistant messages
+  while (win.length > 0 && win[0].role !== 'user') {
+    win.shift();
+  }
+  return win;
 }
 
 function userWantsPlan(text: string): boolean {
@@ -26,7 +31,8 @@ function userWantsPlan(text: string): boolean {
 export async function chatWithAIStream(
   messages: ChatMessage[],
   userProfile?: Partial<UserProfile>,
-  competencyProfile?: StudentCompetencyProfile
+  competencyProfile?: StudentCompetencyProfile,
+  hasRoutesFlag: boolean = false,
 ): Promise<{ stream: ReadableStream<Uint8Array>; sources: ChatSource[] }> {
   const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
   if (!lastUserMessage) {
@@ -35,11 +41,12 @@ export async function chatWithAIStream(
   }
 
   const profile = userProfile || {};
-  const stage = getStage(profile, hasRoutes(), userWantsPlan(lastUserMessage.content));
+  const stage = getStage(profile, hasRoutesFlag, userWantsPlan(lastUserMessage.content));
 
   // 搜索
-  const isSubstantive = lastUserMessage.content.length > 8 &&
-    !/^(你好|hi|hello|嗯|哦|好|可以|行|是的|对|谢谢|ok|哈哈)/i.test(lastUserMessage.content.trim());
+  const trimmed = lastUserMessage.content.trim();
+  const isSubstantive = trimmed.length > 4 &&
+    !/^(你好[!！。~～\s]*|hi[!！]*|hello[!！]*|嗯|哦|好[的了]?|可以|行|是的|[是对对]|谢谢|ok|哈哈)$/i.test(trimmed);
   const webResults = isSubstantive ? await searchWeb(lastUserMessage.content) : [];
   const sources: ChatSource[] = webResults.map((r) => ({ title: r.title, url: r.url, snippet: r.snippet }));
 
@@ -77,8 +84,8 @@ ${next ? `现在问：${next}` : '了解得差不多了，可以问学生想不�
 </instruction>`;
   }
 
-  const systemPrompt = buildSystemPrompt(relevantAtoms, userProfile, competencyProfile, webResults)
-    .replace('</identity>', `</identity>\n${stageGuidance}`);
+  const basePrompt = buildSystemPrompt(relevantAtoms, userProfile, competencyProfile, webResults);
+  const systemPrompt = basePrompt + '\n' + stageGuidance;
 
   const stream = chatStream({
     systemPrompt,

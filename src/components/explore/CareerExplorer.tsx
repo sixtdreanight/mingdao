@@ -151,7 +151,11 @@ export function CareerExplorer() {
         <div className="text-xs text-muted-foreground mb-3">{filtered.length} 个结果</div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {filtered.map((c, i) => (
-            <div key={c.title} className={`rounded-2xl border border-border/20 bg-card p-5 card-hover card-enter card-enter-${Math.min(i+1, 6)} cursor-pointer ${expanded === c.title ? 'ring-2 ring-primary/20' : ''}`}
+            <div key={c.title}
+              role="button" tabIndex={0}
+              aria-expanded={expanded === c.title}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(expanded === c.title ? null : c.title); }}}
+              className={`rounded-2xl border border-border/20 bg-card p-5 card-hover card-enter card-enter-${Math.min(i+1, 6)} cursor-pointer ${expanded === c.title ? 'ring-2 ring-primary/20' : ''}`}
               onClick={() => setExpanded(expanded === c.title ? null : c.title)}>
               <div className="flex items-start justify-between mb-2">
                 <div>

@@ -14,7 +14,7 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: 'BOSS直聘', url: 'https://www.zhipin.com', description: '直聊模式，反馈最快' },
     { name: '智联招聘', url: 'https://www.zhaopin.com', description: '国企/外企/民企全覆盖' },
     { name: '前程无忧 51job', url: 'https://www.51job.com', description: '传统行业最深' },
-    { name: '国考 — 国家公务员局', url: 'http://www.scs.gov.cn', description: '国考唯一入口' },
+    { name: '国考 — 国家公务员局', url: 'https://www.scs.gov.cn', description: '国考唯一入口' },
     { name: '全国事业单位招聘网', url: 'https://www.qgsydw.com', description: '事业单位公告聚合' },
     { name: 'LinkedIn', url: 'https://www.linkedin.com', description: '全球职业社交' },
   ]},
@@ -124,10 +124,10 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: 'NTCE 教师资格考试', url: 'https://ntce.neea.edu.cn', description: '教资报名唯一入口' },
     { name: '粉笔教师 App', url: 'https://www.fenbi.com', description: '近10年真题+AI评分' },
     { name: '国家智慧教育平台', url: 'https://www.chinaooc.com.cn', description: '教育部免费课程' },
-    { name: '国家高等教育智慧平台', url: 'https://www.higher.smartedu.cn', description: '2万门大学课程' },
+    { name: '国家高等教育智慧平台', url: 'https://higher.smartedu.cn', description: '2万门大学课程' },
     { name: '中国大学MOOC', url: 'https://www.icourse163.org', description: '国内高校公开课' },
     { name: '学堂在线', url: 'https://www.xuetangx.com', description: '清华免费课程' },
-    { name: 'MIT OCW', url: 'https://www.ocw.mit.edu', description: 'MIT全部课程免费' },
+    { name: 'MIT OCW', url: 'https://ocw.mit.edu', description: 'MIT全部课程免费' },
   ]},
 
   // ================================================================
@@ -135,7 +135,7 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
   // ================================================================
   { id: 'stem', icon: '🔬', title: '理工科', description: '机械/土木/电气/化工/生物/物理/数学', links: [
     { name: '一览英才网 800hr', url: 'https://www.800hr.com', description: '15个行业子站' },
-    { name: 'OFweek 人才网', url: 'https://www.talent.ofweek.com', description: '光电/电子/智能制造' },
+    { name: 'OFweek 人才网', url: 'https://talent.ofweek.com', description: '光电/电子/智能制造' },
     { name: '摩尔精英', url: 'https://www.mooreelite.com', description: '半导体/芯片垂直' },
     { name: '高校人才网', url: 'https://www.gaoxiaojob.com', description: '全国高校教师+科研岗' },
     { name: '硕博人才网 lipind', url: 'https://www.lipind.com', description: '硕博直招' },
@@ -144,8 +144,8 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: 'ChinaXiv', url: 'https://www.chinaxiv.org', description: '中科院预印本平台' },
     { name: 'GitHub: awesome-math', url: 'https://github.com/rossant/awesome-math', description: '数学资源大全' },
     { name: 'GitHub: awesome-physics', url: 'https://github.com/wbierbower/awesome-physics', description: '物理开源工具目录' },
-    { name: '3Blue1Brown B站', url: 'https://www.bilibili.com', description: '数学可视化，线性代数/微积分本质' },
-    { name: '宋浩老师 B站', url: 'https://www.bilibili.com', description: '高数/线代/概率论零基础' },
+    { name: '3Blue1Brown B站', url: 'https://space.bilibili.com/88461692', description: '数学可视化，线性代数/微积分本质（B站官方频道）' },
+    { name: '宋浩老师 B站', url: 'https://space.bilibili.com/666616736', description: '高数/线代/概率论零基础（B站官方频道）' },
     { name: '实验空间 ilab-x', url: 'https://www.ilab-x.com', description: '虚拟仿真实验' },
   ]},
 
@@ -172,9 +172,9 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: 'TeachYourselfCS-CN', url: 'https://github.com/izackwu/TeachYourselfCS-CN', description: 'CS九门核心课中文版 22k★' },
     { name: '菜鸟教程 runoob', url: 'https://www.runoob.com', description: '中文编程百科，全语言覆盖' },
     { name: '廖雪峰官方网站', url: 'https://www.liaoxuefeng.com', description: 'Python/Java/JS/Git 精简教程' },
-    { name: 'MDN Web 文档', url: 'https://www.developer.mozilla.org/zh-CN', description: '前端开发权威百科' },
-    { name: '现代 JavaScript 教程', url: 'https://www.zh.javascript.info', description: 'JS 学习首选' },
-    { name: 'CS50 Harvard', url: 'https://www.cs50.harvard.edu', description: '哈佛编程入门(B站有中文版)' },
+    { name: 'MDN Web 文档', url: 'https://developer.mozilla.org/zh-CN', description: '前端开发权威百科' },
+    { name: '现代 JavaScript 教程', url: 'https://zh.javascript.info', description: 'JS 学习首选' },
+    { name: 'CS50 Harvard', url: 'https://cs50.harvard.edu', description: '哈佛编程入门(B站有中文版)' },
     { name: 'freeCodeCamp', url: 'https://www.freecodecamp.org', description: '免费编程认证，项目驱动' },
     { name: 'The Odin Project', url: 'https://www.theodinproject.com', description: '免费全栈开发' },
     { name: 'Coursera', url: 'https://www.coursera.org', description: '全球名校课程(旁听免费)' },
@@ -200,7 +200,7 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: 'B站知识区', url: 'https://www.bilibili.com', description: '中文最全免费课程' },
     { name: '译学馆', url: 'https://www.yixueguan.com', description: '国外优质视频中文字幕' },
     { name: 'oeasy.org', url: 'https://www.oeasy.org', description: '传媒大学教师，全免费教程' },
-    { name: '国家终身教育智慧平台', url: 'https://www.lifelong.smartedu.cn', description: '2024年上线，1000门课' },
+    { name: '国家终身教育智慧平台', url: 'https://lifelong.smartedu.cn', description: '2024年上线，1000门课' },
     { name: 'Class Central', url: 'https://www.classcentral.com', description: '25万门全球课程索引' },
     { name: '学吧导航', url: 'https://www.xue8nav.com', description: '学习资源导航站' },
     { name: '古诗文网', url: 'https://www.gushiwen.cn', description: '古诗文鉴赏/注释/翻译' },
@@ -212,7 +212,7 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
   // 医学
   // ================================================================
   { id: 'medicine', icon: '🩺', title: '医学', description: '执医/规培/考研/医院招聘', links: [
-    { name: '维普医学考试', url: 'https://www.yikao.cqvip.com', description: 'DeepSeek AI备考' },
+    { name: '维普医学考试', url: 'https://yikao.cqvip.com', description: 'DeepSeek AI备考' },
     { name: '医考帮 App', url: 'https://www.yikaobang.com', description: '执医/考研/护理全覆盖' },
     { name: '丁香园 dxy', url: 'https://www.dxy.cn', description: '百万医生社区' },
     { name: '全国大学生基础医学创新大赛', url: 'https://www.jcyxds.com', description: '医学类A类赛事' },
@@ -253,9 +253,9 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
   // 考研 / 保研
   // ================================================================
   { id: 'postgrad', icon: '🎓', title: '考研/保研', description: '从择校到复试', links: [
-    { name: '研招网 yz.chsi.com.cn', url: 'https://www.yz.chsi.com.cn', description: '考研唯一官方平台' },
-    { name: '中国教育在线考研', url: 'https://www.kaoyan.eol.cn', description: '报录比/分数线对比' },
-    { name: '考研论坛 bbs.kaoyan.com', url: 'https://www.bbs.kaoyan.com', description: '考研人最大社区' },
+    { name: '研招网 yz.chsi.com.cn', url: 'https://yz.chsi.com.cn', description: '考研唯一官方平台' },
+    { name: '中国教育在线考研', url: 'https://kaoyan.eol.cn', description: '报录比/分数线对比' },
+    { name: '考研论坛 bbs.kaoyan.com', url: 'https://bbs.kaoyan.com', description: '考研人最大社区' },
     { name: '保研论坛 eeban', url: 'https://www.eeban.com', description: '保研圈最大社区' },
     { name: 'CS-BAOYAN Wiki', url: 'https://github.com/CS-BAOYAN/CS-BAOYAN-Wiki', description: '计算机保研经验汇总' },
     { name: '小木虫 muchong', url: 'https://www.muchong.com', description: '调剂论坛+学术社区' },
@@ -268,7 +268,7 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
   // ================================================================
   { id: 'study-abroad', icon: '✈️', title: '留学', description: '选校/文书/签证/校友', links: [
     { name: '一亩三分地', url: 'https://www.1point3acres.com/bbs', description: '北美留学核心社区' },
-    { name: '寄托天下', url: 'https://www.bbs.gter.net', description: '美英加澳港新全覆盖' },
+    { name: '寄托天下', url: 'https://bbs.gter.net', description: '美英加澳港新全覆盖' },
     { name: 'ChaseDream', url: 'https://www.chasedream.com', description: '商学院申请核心' },
     { name: '教育部留学服务中心', url: 'https://www.cscse.cn', description: '回国认证/落户/档案' },
     { name: 'CSC 国家留学基金委', url: 'https://www.csc.edu.cn', description: '国家公派留学' },
@@ -287,7 +287,7 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: '粉笔公考', url: 'https://www.fenbi.com', description: '行测+申论刷题' },
     { name: '华图教育', url: 'https://www.huatu.com', description: '真题解析质量高' },
     { name: '中公教育', url: 'https://www.offcn.com', description: '各省分校资源丰富' },
-    { name: '中央遴选/选调', url: 'https://www.subb.scs.gov.cn/lx2024', description: '中央选调专用' },
+    { name: '中央遴选/选调', url: 'https://subb.scs.gov.cn/lx2024', description: '中央选调专用' },
     { name: '上岸鸭公考 App', url: 'https://www.shanganya.com', description: 'AI申论批改' },
   ]},
 
@@ -300,30 +300,30 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: 'ACM-ICPC', url: 'https://www.icpc.global', description: '计算机"奥林匹克"' },
     { name: '全国大学生数学建模 CUMCM', url: 'https://www.mcm.edu.cn', description: '每年9月，72小时建模' },
     { name: '美赛 MCM/ICM', url: 'https://www.comap.com', description: '全球数学建模' },
-    { name: '蓝桥杯', url: 'https://www.dasai.lanqiao.cn', description: '2100+高校覆盖' },
+    { name: '蓝桥杯', url: 'https://dasai.lanqiao.cn', description: '2100+高校覆盖' },
     { name: '大广赛(学院奖)', url: 'https://www.5iidea.com', description: '广告/设计A类' },
     { name: '全国大学生英语竞赛 NECCS', url: 'https://www.chinaneccs.cn', description: '覆盖面最广' },
-    { name: '外研社·国才杯', url: 'https://www.uchallenge.unipus.cn', description: '英语演讲/写作/辩论' },
-    { name: '全国大学生电子设计竞赛', url: 'https://www.nuedc.xjtu.edu.cn', description: '硬件方向最核心' },
-    { name: '全国大学生机械创新设计', url: 'https://www.umic.moocollege.com', description: '机械顶级赛事' },
+    { name: '外研社·国才杯', url: 'https://uchallenge.unipus.cn', description: '英语演讲/写作/辩论' },
+    { name: '全国大学生电子设计竞赛', url: 'https://nuedc.xjtu.edu.cn', description: '硬件方向最核心' },
+    { name: '全国大学生机械创新设计', url: 'https://umic.moocollege.com', description: '机械顶级赛事' },
     { name: '贝恩杯咨询案例大赛', url: 'https://www.bain.cn', description: '冠军直通终面' },
     { name: 'CFA Research Challenge', url: 'https://www.cfainstitute.org/societies/challenge', description: '金融顶级学生赛' },
     { name: 'Kaggle', url: 'https://www.kaggle.com', description: '数据科学竞赛，免费GPU' },
     { name: 'Jessup 国际法模拟法庭', url: 'https://www.ilsa.org', description: '全球最大模拟法庭' },
     { name: '全国大学生生命科学竞赛', url: 'https://www.culsc.cn', description: '生物A类赛事' },
-    { name: '华为ICT大赛', url: 'https://www.e.huawei.com/cn/talent/ict-academy/#/contest', description: '华为直接主办' },
+    { name: '华为ICT大赛', url: 'https://e.huawei.com/cn/talent/ict-academy/#/contest', description: '华为直接主办' },
     { name: '开源之夏 OSPP', url: 'https://www.summer-ospp.ac.cn', description: '中科院主办，有奖金' },
-    { name: 'Google Summer of Code', url: 'https://www.summerofcode.withgoogle.com', description: '全球最有声望学生开源' },
-    { name: '全国大学生化工设计竞赛', url: 'https://www.che.ecust.edu.cn', description: '化工学科核心赛事' },
+    { name: 'Google Summer of Code', url: 'https://summerofcode.withgoogle.com', description: '全球最有声望学生开源' },
+    { name: '全国大学生化工设计竞赛', url: 'https://che.ecust.edu.cn', description: '化工学科核心赛事' },
   ]},
 
   // ================================================================
   // 科研资源
   // ================================================================
   { id: 'research', icon: '🔬', title: '科研资源', description: '暑研/大创/学术会议/论文发表/预印本', links: [
-    { name: '大创平台', url: 'https://www.gjcxcy.bjtu.edu.cn', description: '国家级大学生创新创业训练' },
+    { name: '大创平台', url: 'https://gjcxcy.bjtu.edu.cn', description: '国家级大学生创新创业训练' },
     { name: 'NSFC 本科生项目', url: 'https://www.nsfc.gov.cn', description: '每项资助约5万(8校试点)' },
-    { name: '中科院暑校 zxsq.ucas.ac.cn', url: 'https://www.zxsq.ucas.ac.cn', description: '中科院各所暑期研修' },
+    { name: '中科院暑校 zxsq.ucas.ac.cn', url: 'https://zxsq.ucas.ac.cn', description: '中科院各所暑期研修' },
     { name: 'NSF REU 美国暑研', url: 'https://www.nsf.gov/crssprgm/reu/', description: '美国国家科学基金暑研' },
     { name: 'arXiv 预印本', url: 'https://www.arxiv.org', description: '物理/数学/CS' },
     { name: 'SSRN 社科预印本', url: 'https://www.ssrn.com', description: '经济/法学/管理' },
@@ -345,19 +345,19 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
   // 实用工具
   // ================================================================
   { id: 'tools', icon: '🛠️', title: '实用工具', description: '简历/AI/笔记/效率', links: [
-    { name: 'GitHub Student Pack', url: 'https://www.education.github.com/pack', description: '学生免费100+工具' },
+    { name: 'GitHub Student Pack', url: 'https://education.github.com/pack', description: '学生免费100+工具' },
     { name: '超级简历 wondercv', url: 'https://www.wondercv.com', description: 'AI写简历' },
     { name: '100分简历', url: 'https://www.100fen.cn', description: '3000+岗位模板+AI生成' },
     { name: 'Z-Library', url: 'https://www.z-lib.io', description: '全球最大免费电子书库' },
     { name: '鸠摩搜书', url: 'https://www.jiumodiary.com', description: '中文电子书搜索' },
     { name: 'DeepL', url: 'https://www.deepl.com', description: '最自然AI翻译' },
     { name: 'Grammarly', url: 'https://www.grammarly.com', description: '英文写作辅助' },
-    { name: 'Anki', url: 'https://www.apps.ankiweb.net', description: '间隔重复记忆' },
+    { name: 'Anki', url: 'https://apps.ankiweb.net', description: '间隔重复记忆' },
     { name: 'MikuTools', url: 'https://www.okmiku.com', description: '百种轻量在线小工具' },
     { name: 'PDF24 Tools', url: 'https://www.tools.pdf24.org/zh', description: 'PDF瑞士军刀，免费无限制' },
-    { name: 'Carbon', url: 'https://www.carbon.now.sh', description: '代码生成高颜值图片' },
+    { name: 'Carbon', url: 'https://carbon.now.sh', description: '代码生成高颜值图片' },
     { name: '考试酷 Examcoo', url: 'https://www.examcoo.com', description: '永久免费在线考试题库' },
-    { name: '全国图书馆参考咨询联盟', url: 'https://www.ucdrs.superlib.net', description: '国家队免费文献传递' },
+    { name: '全国图书馆参考咨询联盟', url: 'https://ucdrs.superlib.net', description: '国家队免费文献传递' },
     { name: 'Sci-Hub', url: 'https://www.sci-hub.se', description: '全球论文免费下载' },
     { name: 'AMiner', url: 'https://www.aminer.cn', description: '清华出品学术搜索' },
     { name: 'Snipaste', url: 'https://www.snipaste.com', description: '截图贴桌面当便签' },
@@ -403,8 +403,8 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
   // 行业报告
   // ================================================================
   { id: 'reports', icon: '📊', title: '行业报告', description: '趋势/白皮书/开发者调查', links: [
-    { name: 'Stack Overflow Survey', url: 'https://www.survey.stackoverflow.co', description: '全球开发者调查' },
-    { name: 'GitHub Octoverse', url: 'https://www.octoverse.github.com', description: '开源生态年度报告' },
+    { name: 'Stack Overflow Survey', url: 'https://survey.stackoverflow.co', description: '全球开发者调查' },
+    { name: 'GitHub Octoverse', url: 'https://octoverse.github.com', description: '开源生态年度报告' },
     { name: '中国信通院', url: 'https://www.caict.ac.cn', description: '数字经济白皮书' },
     { name: '艾瑞咨询', url: 'https://www.iresearch.cn', description: '互联网各行业报告' },
     { name: 'WEF Future of Jobs', url: 'https://www.weforum.org', description: '全球就业趋势+AI风险' },
@@ -436,13 +436,13 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
   // ================================================================
   { id: 'podcast', icon: '🎧', title: '播客', description: '通勤/碎片时间知识输入', links: [
     { name: '小宇宙App', url: 'https://www.xiaoyuzhoufm.com', description: '中文播客首选平台' },
-    { name: '《钱婧老师的会客厅》', url: 'https://www.xiaoyuzhoufm.com', description: '北师大博导，本硕博学术规划' },
-    { name: '《东腔西调》', url: 'https://www.xiaoyuzhoufm.com', description: '哲学/历史/国际政治对谈' },
-    { name: '《声东击西》', url: 'https://www.xiaoyuzhoufm.com', description: '记者视角社会议题' },
-    { name: '《螺丝在拧紧》', url: 'https://www.xiaoyuzhoufm.com', description: '单读主编深度人文访谈' },
-    { name: '《翻转电台》', url: 'https://www.xiaoyuzhoufm.com', description: '哲学经典+当下问题' },
-    { name: '《文化有限》', url: 'https://www.xiaoyuzhoufm.com', description: '三人聊经典著作' },
-    { name: '《放学以后》', url: 'https://www.xiaoyuzhoufm.com', description: '学习/工作/女性议题' },
+    { name: '《钱婧老师的会客厅》', url: 'https://www.xiaoyuzhoufm.com', description: '北师大博导，本硕博学术规划（在小宇宙App内搜索）' },
+    { name: '《东腔西调》', url: 'https://www.xiaoyuzhoufm.com', description: '哲学/历史/国际政治对谈（在小宇宙App内搜索）' },
+    { name: '《声东击西》', url: 'https://www.xiaoyuzhoufm.com', description: '记者视角社会议题（在小宇宙App内搜索）' },
+    { name: '《螺丝在拧紧》', url: 'https://www.xiaoyuzhoufm.com', description: '单读主编深度人文访谈（在小宇宙App内搜索）' },
+    { name: '《翻转电台》', url: 'https://www.xiaoyuzhoufm.com', description: '哲学经典+当下问题（在小宇宙App内搜索）' },
+    { name: '《文化有限》', url: 'https://www.xiaoyuzhoufm.com', description: '三人聊经典著作（在小宇宙App内搜索）' },
+    { name: '《放学以后》', url: 'https://www.xiaoyuzhoufm.com', description: '学习/工作/女性议题（在小宇宙App内搜索）' },
   ]},
 
   // ================================================================
@@ -454,7 +454,7 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: 'IELTS Buddy', url: 'https://www.ieltsbuddy.com', description: '听说读写分项练习' },
     { name: 'YouGlish', url: 'https://www.youglish.com', description: '视频学单词真实发音' },
     { name: '多邻国 Duolingo', url: 'https://www.duolingo.com', description: '免费入门' },
-    { name: 'DW 学德语', url: 'https://www.learngerman.dw.com', description: '免费A1-B2' },
+    { name: 'DW 学德语', url: 'https://learngerman.dw.com', description: '免费A1-B2' },
     { name: 'NHK Easy Japanese', url: 'https://www3.nhk.or.jp/news/easy/', description: '简明日语新闻' },
     { name: 'MOJiTest', url: 'https://www.mojitest.com', description: '日语N5-N1真题' },
     { name: 'JLPT 中国官网', url: 'https://www.jlpt.neea.cn', description: '日语能力考报名' },
@@ -484,6 +484,6 @@ export const RESOURCE_INDEX: ResourceCategory[] = [
     { name: '志愿汇', url: 'https://www.zyh.org.cn', description: '8800万注册志愿者' },
     { name: '中国志愿服务网', url: 'https://www.chinavolunteer.mca.gov.cn', description: '民政部官方' },
     { name: '志愿中国', url: 'https://www.zyz.org.cn', description: '青年志愿服务' },
-    { name: '到梦空间 App', url: 'https://www.dreamspace.com', description: '校园活动+学分认证' },
+    { name: '到梦空间 App', url: 'https://www.5idream.net', description: '校园活动+学分认证' },
   ]},
 ];

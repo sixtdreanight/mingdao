@@ -10,6 +10,7 @@ export function extractProfile(
   messages: { role: string; content: string }[]
 ): Partial<UserProfile> {
   const fullText = messages
+    .filter(m => m.role === 'user')
     .map((m) => m.content)
     .join('\n');
 
@@ -48,9 +49,9 @@ export function extractProfile(
   }
 
   // === 学校层次 ===
-  if (/双非|普通一本|一本/.test(fullText)) profile.universityTier = '双非一本';
-  else if (/985/.test(fullText)) profile.universityTier = '985';
-  else if (/211/.test(fullText)) profile.universityTier = '211';
+  if (/985/.test(fullText) && !/非985|不是985|没有985/.test(fullText)) profile.universityTier = '985';
+  else if (/211/.test(fullText) && !/非211|不是211|没有211/.test(fullText)) profile.universityTier = '211';
+  else if (/双非|普通一本|一本/.test(fullText)) profile.universityTier = '双非一本';
   else if (/二本/.test(fullText)) profile.universityTier = '二本';
   else if (/专科|大专/.test(fullText)) profile.universityTier = '专科';
 
@@ -70,11 +71,17 @@ export function extractProfile(
   }
 
   // === 经济预算 ===
-  const budgetMatches = fullText.match(
+  // 前缀模式: "预算30万" / "家里能支持30万"
+  const budgetPrefix = fullText.match(
+    /(?:预算|资金|支持|家里能|家里可以|家庭|准备)[^\d]{0,6}(\d+)\s*(?:万|w|W)/
+  );
+  // 后缀模式: "30万预算"
+  const budgetSuffix = fullText.match(
     /(\d+)\s*(?:万|w|W)(?:以内|左右|预算|资金|支持|家里能|家里可以|家庭)/
   );
-  if (budgetMatches) {
-    profile.householdBudget = parseInt(budgetMatches[1], 10) * 10000;
+  const budgetNum = budgetPrefix?.[1] || budgetSuffix?.[1];
+  if (budgetNum) {
+    profile.householdBudget = parseInt(budgetNum, 10) * 10000;
   }
   // 间接推断
   if (/家里条件一般|经济压力|需要尽快工作|不能花太多/.test(fullText)) {
@@ -133,21 +140,24 @@ export function extractProfile(
 export function extractCompetencySignals(
   messages: { role: string; content: string }[]
 ): InferredSignal[] {
-  const fullText = messages.map((m) => m.content).join('\n');
+  const fullText = messages
+    .filter(m => m.role === 'user')
+    .map((m) => m.content)
+    .join('\n');
   const signals: InferredSignal[] = [];
 
   // 学生自述的能力水平模式
   const patterns: [RegExp, string, ProficiencyLevel][] = [
     // 明确学过/考过 → Level 2-3
-    [/我?修过[「「]?(.{2,12})[」」]?(?:课程|课)/g, 'course', 3],
-    [/我?考了|我?拿过|我?通过[了]?(.{2,16})?(?:证书|资格证|考试)/g, 'cert', 3],
-    [/我?做过|我?参加过|我?实习[过]?|我?完成[了]?(.{2,20})?(?:项目|比赛|竞赛|实习)/g, 'project', 3],
+    [/(?:我?修过)(.{2,12})(?:课程|课)/g, 'course', 3],
+    [/(?:我?考了|我?拿过|我?通过了?)(.{2,16}?)(?:证书|资格证|考试)/g, 'cert', 3],
+    [/(?:我?做过|我?参加过|我?实习过?|我?完成了?)(.{2,20}?)(?:项目|比赛|竞赛|实习)/g, 'project', 3],
     // 不熟练 → Level 1-2
     [/(.{2,12})(?:不太会|不熟练|没学过|没接触过|基础差)/g, 'weak', 1],
     // 熟练 → Level 4
     [/(.{2,12})(?:很熟练|比较熟|经常用|一直在做|是我的强项)/g, 'strong', 4],
     // 教别人 → Level 5
-    [/(.{2,12})(?:教[过]?|指导[过]?|带[过]?)(?:别人|同学|新人|学弟)/g, 'teach', 5],
+    [/(.{2,12})(?:教过?|指导过?|带过?)(?:别人|同学|新人|学弟)/g, 'teach', 5],
   ];
 
   for (const [regex, source, level] of patterns) {

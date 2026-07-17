@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route, RouteNode } from '@/lib/planner';
 import { getRoutes, updateNodeStatus, abandonRoute } from '@/lib/route-store';
+import { addActivity } from '@/lib/activity-store';
 
 const NODE_W = 140;
 const NODE_H = 52;
@@ -28,8 +29,9 @@ function nodeIcon(status: RouteNode['status']): string {
 }
 
 function RouteChain({ route, onUpdate }: { route: Route & { status: string }; onUpdate: () => void }) {
-  const nodes = [...route.nodes].reverse(); // 起点在底，目标在顶
-  const maxW = Math.max(...nodes.map(n => n.label.length)) * 14 + 60;
+  const nodes = route.nodes; // planner emits goal first → target at top, start at bottom
+  const labelLen = Math.max(...nodes.map(n => n.label.length), 2);
+  const maxW = labelLen * 14 + 60;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -65,7 +67,7 @@ function RouteChain({ route, onUpdate }: { route: Route & { status: string }; on
                       onUpdate();
                     }
                   }}
-                  className={`flex w-full h-full items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-all hover:shadow-sm ${nodeColor(node.status)} ${node.status === 'locked' ? 'cursor-default' : 'cursor-pointer'}`}
+                  className={`flex w-full h-full items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-all hover:shadow-sm ${nodeColor(node.status)} ${node.status === 'locked' || node.status === 'goal' ? 'cursor-default' : 'cursor-pointer'}`}
                 >
                   <span className="text-sm">{nodeIcon(node.status)}</span>
                   <span className="text-left leading-tight line-clamp-2">{node.label}</span>
@@ -79,7 +81,14 @@ function RouteChain({ route, onUpdate }: { route: Route & { status: string }; on
       <p className="text-xs text-muted-foreground">{route.tags.join(' · ')}</p>
       <div className="flex gap-2">
         <button
-          onClick={() => { abandonRoute(route.id); onUpdate(); }}
+          onClick={() => {
+            const reason = window.prompt('为什么要放弃这条路？（可选）');
+            abandonRoute(route.id);
+            if (reason) {
+              addActivity({ type: 'profile_update', title: `放弃路线: ${route.title}`, detail: reason });
+            }
+            onUpdate();
+          }}
           className="text-xs text-muted-foreground hover:text-red-500"
         >
           放弃
@@ -93,7 +102,17 @@ export function RouteBoard() {
   const router = useRouter();
   const [routes, setRoutes] = useState<(Route & { status: string })[]>([]);
 
-  useEffect(() => { setRoutes(getRoutes()); }, []);
+  useEffect(() => {
+    setRoutes(getRoutes());
+    const refresh = () => setRoutes(getRoutes());
+    window.addEventListener('routes-updated', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('routes-updated', refresh);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
+
   const refresh = () => setRoutes(getRoutes());
 
   if (routes.length === 0) {

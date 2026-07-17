@@ -8,24 +8,42 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const messages: ChatMessage[] = body.messages;
     const competencyProfile = body.competencyProfile;
+    const hasRoutesFlag: boolean = body.hasRoutes === true;
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ success: false, error: 'messages 不能为空' }, { status: 400 });
     }
+    // 校验消息结构
+    for (const m of messages) {
+      if (!m || typeof m.role !== 'string' || typeof m.content !== 'string') {
+        return NextResponse.json({ success: false, error: '消息格式错误' }, { status: 400 });
+      }
+      if (m.content.length > 8000) {
+        return NextResponse.json({ success: false, error: '单条消息过长' }, { status: 400 });
+      }
+    }
+    if (messages.length > 100) {
+      return NextResponse.json({ success: false, error: '消息过多' }, { status: 400 });
+    }
 
     const profile = extractProfile(messages);
-    const { stream, sources } = await chatWithAIStream(messages, profile, competencyProfile);
+    const { stream, sources } = await chatWithAIStream(messages, profile, competencyProfile, hasRoutesFlag);
 
     const encoder = new TextEncoder();
     const sourceChunk = encoder.encode(JSON.stringify({ type: 'sources', sources, profile }) + '\n');
 
     const combined = new ReadableStream({
       async start(controller) {
-        controller.enqueue(sourceChunk);
-        const reader = stream.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) { controller.enqueue(encoder.encode('\n[DONE]')); controller.close(); break; }
-          controller.enqueue(value);
+        try {
+          controller.enqueue(sourceChunk);
+          const reader = stream.getReader();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) { controller.enqueue(encoder.encode('\n[DONE]\n')); controller.close(); break; }
+            controller.enqueue(value);
+          }
+        } catch (err) {
+          controller.error(err);
         }
       },
     });

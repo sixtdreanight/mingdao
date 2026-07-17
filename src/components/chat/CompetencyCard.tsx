@@ -9,12 +9,13 @@ import type {
   SelfAssessment,
 } from '@/types/competency';
 import { PROFICIENCY_LABELS } from '@/types/competency';
+import { matchResources } from '@/lib/resource-matcher';
+import type { ResourceLink } from '@/data/resources';
 
 interface CompetencyCardProps {
   profile: OccupationCompetencyProfile;
   selfAssessments: SelfAssessment[];
   onAssess: (competencyId: string, level: ProficiencyLevel, evidence: string) => void;
-  onViewResources: (competencyId: string) => void;
   onRefresh: () => void;
   loading?: boolean;
 }
@@ -84,11 +85,20 @@ export function CompetencyCard({
   profile,
   selfAssessments,
   onAssess,
-  onViewResources,
   onRefresh,
   loading,
 }: CompetencyCardProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [resourceCache, setResourceCache] = useState<Map<string, ResourceLink[]>>(new Map());
+
+  const getResources = (gap: CompetencyGap): ResourceLink[] => {
+    const id = gap.competency.id;
+    if (resourceCache.has(id)) return resourceCache.get(id)!;
+    // compute lazily and cache
+    const resources = matchResources(gap);
+    setResourceCache(prev => new Map(prev).set(id, resources));
+    return resources;
+  };
   const analysis = useMemo(
     () => computeGapAnalysis(profile, selfAssessments),
     [profile, selfAssessments],
@@ -231,13 +241,35 @@ export function CompetencyCard({
                           </button>
                         ))}
                       </div>
-                      {/* 查看资源按钮 */}
-                      <button
-                        onClick={() => onViewResources(gap.competency.id)}
-                        className="text-xs text-primary hover:underline"
-                      >
-                        {'📚'} 查看推荐学习资源 →
-                      </button>
+                      {/* 推荐学习资源 */}
+                      <div className="mt-2 pt-2 border-t border-border/20">
+                        <p className="text-[10px] text-muted-foreground mb-1">
+                          {'📚'} 推荐学习资源
+                        </p>
+                        {(() => {
+                          const resources = getResources(gap);
+                          if (resources.length === 0) {
+                            return <p className="text-[10px] text-muted-foreground/50 italic">暂无匹配资源，可在资源库中搜索相关关键词</p>;
+                          }
+                          return (
+                            <div className="space-y-1">
+                              {resources.slice(0, 5).map((r, j) => (
+                                <a
+                                  key={j}
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 rounded px-1.5 py-1 text-[10px] text-primary hover:bg-secondary/50 transition-colors"
+                                >
+                                  <span className="text-muted-foreground">{j + 1}.</span>
+                                  <span className="truncate">{r.name}</span>
+                                  <span className="shrink-0 text-muted-foreground/40">↗</span>
+                                </a>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                   )}
                 </div>

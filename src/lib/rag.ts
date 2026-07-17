@@ -1,7 +1,6 @@
 import type { KnowledgeAtom, UserProfile } from '@/types';
 import type { StudentCompetencyProfile } from '@/types/competency';
 import { searchAtoms } from '@/data/knowledge';
-import { searchWeb } from './web-search';
 
 interface RagResult {
   atom: KnowledgeAtom;
@@ -87,8 +86,8 @@ function extractKeywords(
     [/就业|工作|上班|校招|社招|应届/, '就业'],
     [/考公|选调|公务员|体制|事业编/, '考公'],
     [/自由职业|远程|兼职|副业|独立开发/, '自由职业'],
-    [/上海|北京|深圳|广州|杭州|成都/, '上海'],
-    [/外企|大厂|创业|国企|银行/, '外企'],
+    [/上海|北京|深圳|广州|杭州|成都/, ''],  // 从匹配中提取具体城市
+    [/外企|大厂|创业|国企|银行/, ''],        // 从匹配中提取具体雇主类型
     [/薪资|工资|年薪|月薪|收入|起薪/, '薪资'],
     [/996|加班|WLB|工作生活|平衡|朝九晚五/, 'WLB'],
     [/落户|户口|签证|H1B|OPT/, '签证'],
@@ -96,8 +95,10 @@ function extractKeywords(
   ];
 
   for (const [regex, keyword] of patterns) {
-    if (regex.test(query) && !keywords.includes(keyword)) {
-      keywords.push(keyword);
+    const m = query.match(regex);
+    if (m) {
+      const token = keyword || m[0];
+      if (!keywords.includes(token)) keywords.push(token);
     }
   }
 
