@@ -2,19 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { KnowledgeAtom } from '@/types';
-import { ExternalLink, Search, TrendingUp, MapPin } from 'lucide-react';
-import { searchAtoms } from '@/data/knowledge';
-
-const QUERIES: { kw: string; cats: string[] }[] = [
-  { kw: '2025', cats: ['salary','employment','education','cost','trend'] },
-  { kw: '2024', cats: ['salary','cost','policy'] },
-  { kw: '薪资', cats: ['salary'] },
-  { kw: '就业', cats: ['employment'] },
-  { kw: '教育', cats: ['education'] },
-  { kw: '生活', cats: ['cost','life'] },
-  { kw: '趋势', cats: ['trend','employment'] },
-  { kw: '政策', cats: ['policy'] },
-];
+import { ExternalLink, Search, MapPin } from 'lucide-react';
+import { loadAllData } from '@/lib/data-store';
 
 function StatBadge({ label, value, icon }: { label: string; value: string; icon?: string }) {
   return (
@@ -44,12 +33,7 @@ export function KnowledgeBrowser() {
   };
 
   useEffect(() => {
-    Promise.all(QUERIES.map(q => searchAtoms(q.kw, q.cats, 15)))
-      .then(results => {
-        const seen = new Set<string>();
-        setAtoms(results.flat().filter(a => seen.has(a.id) ? false : (seen.add(a.id), true)));
-      })
-      .finally(() => setLoading(false));
+    loadAllData().then(data => setAtoms(data)).finally(() => setLoading(false));
   }, []);
 
   const filtered = useMemo(() => {
