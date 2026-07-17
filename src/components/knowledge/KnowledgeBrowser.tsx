@@ -6,12 +6,14 @@ import { ExternalLink, Search, TrendingUp, MapPin } from 'lucide-react';
 import { searchAtoms } from '@/data/knowledge';
 
 const QUERIES: { kw: string; cats: string[] }[] = [
+  { kw: '2025', cats: ['salary','employment','education','cost','trend'] },
+  { kw: '2024', cats: ['salary','cost','policy'] },
   { kw: '薪资', cats: ['salary'] },
   { kw: '就业', cats: ['employment'] },
   { kw: '教育', cats: ['education'] },
-  { kw: '生活成本', cats: ['cost'] },
-  { kw: '2025', cats: ['salary','employment'] },
-  { kw: '行业', cats: ['salary','employment','trend'] },
+  { kw: '生活', cats: ['cost','life'] },
+  { kw: '趋势', cats: ['trend','employment'] },
+  { kw: '政策', cats: ['policy'] },
 ];
 
 function StatBadge({ label, value, icon }: { label: string; value: string; icon?: string }) {
@@ -42,7 +44,7 @@ export function KnowledgeBrowser() {
   };
 
   useEffect(() => {
-    Promise.all(QUERIES.map(q => searchAtoms(q.kw, q.cats, 5)))
+    Promise.all(QUERIES.map(q => searchAtoms(q.kw, q.cats, 15)))
       .then(results => {
         const seen = new Set<string>();
         setAtoms(results.flat().filter(a => seen.has(a.id) ? false : (seen.add(a.id), true)));
