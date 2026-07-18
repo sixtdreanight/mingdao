@@ -5,14 +5,19 @@ import { CheckCircle, XCircle, Info, X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
 
-interface Toast {
-  id: string; type: ToastType; message: string; exiting?: boolean;
+interface ToastAction {
+  label: string;
+  onClick: () => void;
 }
 
-let addToastFn: ((type: ToastType, message: string) => void) | null = null;
+interface Toast {
+  id: string; type: ToastType; message: string; exiting?: boolean; action?: ToastAction;
+}
 
-export function toast(type: ToastType, message: string) {
-  addToastFn?.(type, message);
+let addToastFn: ((type: ToastType, message: string, action?: ToastAction) => void) | null = null;
+
+export function toast(type: ToastType, message: string, action?: ToastAction) {
+  addToastFn?.(type, message, action);
 }
 
 export function Toaster() {
@@ -24,10 +29,10 @@ export function Toaster() {
     if (t.has(id)) { clearTimeout(t.get(id)!); t.delete(id); }
   };
 
-  const add = useCallback((type: ToastType, message: string) => {
+  const add = useCallback((type: ToastType, message: string, action?: ToastAction) => {
     const id = Math.random().toString(36).slice(2);
     setToasts(prev => {
-      const next = [...prev, { id, type, message }];
+      const next = [...prev, { id, type, message, action }];
       if (next.length > 5) {
         const removed = next.shift()!;
         setTimeout(() => { clearTimers(removed.id); clearTimers(removed.id + ':remove'); }, 0);
@@ -73,6 +78,14 @@ export function Toaster() {
             className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm shadow-lg backdrop-blur-sm transition-all duration-200 ${colors[t.type]} ${t.exiting ? 'opacity-0 translate-x-4' : 'opacity-100 spring-in'}`}>
             <Icon className="h-4 w-4 shrink-0" />
             <span className="font-medium">{t.message}</span>
+            {t.action && (
+              <button
+                onClick={() => { t.action!.onClick(); manualClose(t.id); }}
+                className="ml-1 rounded-md px-2 py-0.5 text-xs font-medium underline underline-offset-2 hover:opacity-80"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button onClick={() => manualClose(t.id)}
               className="ml-2 rounded p-0.5 hover:bg-black/5"><X className="h-3.5 w-3.5" /></button>
           </div>

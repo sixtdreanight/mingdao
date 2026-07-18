@@ -69,9 +69,47 @@ function MessageBubbleInner({ message }: MessageBubbleProps) {
               </div>
             )}
           </div>
-        </div>
-      )}
-    </div>
+          {/* Feedback bar — only for assistant messages */}
+        {!isUser && message.content.length > 0 && (
+          <div className="mt-3 flex items-center gap-1 border-t border-border/30 pt-2">
+            <button
+              onClick={() => {
+                import('@/lib/activity-store').then(({ addActivity }) => {
+                  addActivity({ type: 'chat', title: '👍 有用:', detail: message.content.slice(0, 50) });
+                });
+              }}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-secondary hover:text-emerald-600 transition-all active:scale-90"
+              aria-label="有用"
+            >
+              👍 <span className="text-[10px]">有用</span>
+            </button>
+            <button
+              onClick={() => {
+                import('@/lib/activity-store').then(({ addActivity }) => {
+                  addActivity({ type: 'chat', title: '👎 无用:', detail: message.content.slice(0, 50) });
+                });
+              }}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-secondary hover:text-red-500 transition-all active:scale-90"
+              aria-label="没用"
+            >
+              👎 <span className="text-[10px]">没用</span>
+            </button>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(message.content).then(() => {
+                  import('@/components/ui/toast').then(({ toast }) => toast('success', '已复制到剪贴板'));
+                }).catch(() => {});
+              }}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition-all active:scale-90 ml-auto"
+              aria-label="复制"
+            >
+              📋 <span className="text-[10px]">复制</span>
+            </button>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
   );
 }
 

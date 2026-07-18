@@ -168,7 +168,23 @@ export function ChatInterface() {
   return (
     <div className="flex h-full flex-col bg-background">
       <div className="chat-scroll flex-1 overflow-y-auto px-5 py-6">
-        {messages.map((msg, i) => (<MessageBubble key={i} message={msg} />))}
+        {messages.map((msg, i) => (
+          <div key={i}>
+            <MessageBubble message={msg} />
+            {msg.role === 'assistant' && i === messages.length - 1 && msg.content.length > 20 && !loading && (
+              <div className="mb-5 flex justify-start">
+                <div className="max-w-[82%] ml-6">
+                  <button
+                    onClick={() => { setInput('能再详细解释一下吗？'); }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all"
+                  >
+                    💡 试试: "能再详细解释一下吗？"
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
         {loading && messages[messages.length - 1]?.content === '' && <div className="mb-5 flex justify-start">
           <div className="max-w-[82%]"><div className="mb-1 flex items-center gap-2"><span className="text-xs font-medium uppercase tracking-wider text-primary/60">助手</span><span className="h-px flex-1 bg-border" /></div>
           <div className="rounded-r-xl rounded-bl-md border-l-[3px] border-primary/40 bg-card px-4 py-3 shadow-sm">

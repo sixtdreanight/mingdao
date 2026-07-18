@@ -540,6 +540,17 @@ export function DecisionJournal() {
           )}
         </header>
 
+        {decisions.length > 0 && (
+          <div className="rounded-xl border border-border/40 bg-card p-3 mb-4">
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-foreground font-medium">📋 本周决策摘要</span>
+              <span className="text-muted-foreground">⏳ {decisions.filter(d => d.status === 'open').length} 待决定</span>
+              <span className="text-muted-foreground">✅ {decisions.filter(d => d.status === 'settled').length} 已决定</span>
+              <span className="text-muted-foreground">🔄 {decisions.reduce((sum, d) => sum + d.snapshots.length, 0)} 总快照</span>
+            </div>
+          </div>
+        )}
+
         {showForm && (
           <NewDecisionForm
             onSaved={() => { setShowForm(false); refresh(); }}

@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Sparkles, UserCircle, Database, Library, ChevronLeft, ChevronRight, History, User, Map, BarChart3, GitBranch, Compass, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ProgressRing } from '@/components/ui/progress-ring';
+import { getAchievementCount, TOTAL_ACHIEVEMENTS } from '@/lib/achievement-store';
 
 const NAV_ITEMS = [
   { id: 'coach',     icon: Sparkles,    label: 'AI规划师', en: 'Coach' },
@@ -25,6 +27,7 @@ export function AppSidebar({ onOpenHistory }: { onOpenHistory: () => void }) {
   const params = useSearchParams();
   const activeTab = params.get('tab') || 'coach';
   const [collapsed, setCollapsed] = useState(false);
+  const [badgeCount, setBadgeCount] = useState(0);
 
   useEffect(() => {
     try {
@@ -35,6 +38,17 @@ export function AppSidebar({ onOpenHistory }: { onOpenHistory: () => void }) {
         setCollapsed(true);
       }
     } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    setBadgeCount(getAchievementCount());
+    const refresh = () => setBadgeCount(getAchievementCount());
+    window.addEventListener('badges-updated', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('badges-updated', refresh);
+      window.removeEventListener('storage', refresh);
+    };
   }, []);
 
   const toggleCollapse = () => {
@@ -73,7 +87,10 @@ export function AppSidebar({ onOpenHistory }: { onOpenHistory: () => void }) {
                   : 'text-muted-foreground/70 hover:bg-secondary/50 hover:text-foreground'
               )}>
               {isActive && <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />}
-              <item.icon className={cn('h-[18px] w-[18px] shrink-0 transition-colors', isActive ? 'text-primary' : 'text-muted-foreground/40 group-hover:text-muted-foreground/70')} strokeWidth={isActive ? 2.2 : 1.8} />
+              <span className="flex items-center gap-1.5">
+                <item.icon className={cn('h-[18px] w-[18px] shrink-0 transition-colors', isActive ? 'text-primary' : 'text-muted-foreground/40 group-hover:text-muted-foreground/70')} strokeWidth={isActive ? 2.2 : 1.8} />
+                {item.id === 'routes' && <ProgressRing value={badgeCount} total={TOTAL_ACHIEVEMENTS} size={20} strokeWidth={2} />}
+              </span>
               {!collapsed && (
                 <span className="flex flex-col leading-tight">
                   <span className="text-[13px]">{item.label}</span>

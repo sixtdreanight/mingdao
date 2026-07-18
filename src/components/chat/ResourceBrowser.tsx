@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search, ExternalLink, X, Bookmark } from 'lucide-react';
+import { Search, ExternalLink, X, Bookmark, Share2 } from 'lucide-react';
 import { RESOURCE_INDEX, type ResourceCategory, type ResourceLink } from '@/data/resources';
 
 // Category icons using lucide names
@@ -143,7 +143,16 @@ export function ResourceBrowser() {
   );
 }
 
+function useResourceToast() {
+  const toast = (type: string, message: string) => {
+    import('@/components/ui/toast').then(({ toast }) => toast(type as 'success' | 'error' | 'info', message));
+  };
+  return toast;
+}
+
 function ResourceCard({ link, saved, onToggle }: { link: ResourceLink; saved: boolean; onToggle: () => void }) {
+  const toast = useResourceToast();
+
   return (
     <div className="group relative flex flex-col rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm">
       <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex-1">
@@ -153,6 +162,18 @@ function ResourceCard({ link, saved, onToggle }: { link: ResourceLink; saved: bo
         </div>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{link.description}</p>
       </a>
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          navigator.clipboard.writeText(link.url).then(() => {
+            toast('success', '链接已复制');
+          }).catch(() => {});
+        }}
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
+        aria-label="分享链接"
+      >
+        <Share2 className="h-3.5 w-3.5" />
+      </button>
       <button onClick={(e) => { e.preventDefault(); onToggle(); }}
         className={`mt-2 flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${saved ? 'bg-amber-50 text-amber-700' : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:bg-secondary'}`}>
         <Bookmark className={`h-3 w-3 ${saved ? 'fill-amber-400' : ''}`} /> {saved ? '已收藏' : '收藏'}
