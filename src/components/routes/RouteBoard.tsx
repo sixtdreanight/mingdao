@@ -200,5 +200,5 @@ function BadgeUnlockHost() {
   }, []);
   const current = queue[0];
   if (!current) return null;
-  return <BadgeUnlockOverlay badge={current} onClose={() => setQueue(prev => prev.slice(1))} />;
+  return <BadgeUnlockOverlay key={current.id} badge={current} onClose={() => setQueue(prev => prev.slice(1))} />;
 }
