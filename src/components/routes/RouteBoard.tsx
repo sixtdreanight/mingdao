@@ -77,10 +77,12 @@ export function RouteBoard() {
   useEffect(() => {
     const refresh = () => {
       const streak = getStreak();
+      let nightVisits = 0;
+      try { nightVisits = parseInt(localStorage.getItem('mingdao-night-visits') || '0', 10); } catch { /* ignore */ }
       const ctx = collectContext(
         streak, getProfile(), getActivities().filter(a => a.type === 'resource_save').length,
         getCompareViews(), isPersonalityDone(), getCompetencyCount(),
-        isExplorerUsed(), isSimDone(), 0,
+        isExplorerUsed(), isSimDone(), nightVisits,
       );
       setAppContext(ctx);
 

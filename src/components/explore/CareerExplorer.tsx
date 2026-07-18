@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, SlidersHorizontal, TrendingUp, GraduationCap, Clock, MapPin, X } from 'lucide-react';
 
 interface Career {
@@ -102,6 +102,10 @@ const INDUSTRIES = [...new Set(CAREERS.map(c => c.industry))];
 const OUTLOOK_MAP = { rising: '📈 上升', stable: '➡️ 稳定', declining: '📉 下降' };
 
 export function CareerExplorer() {
+  useEffect(() => {
+    try { localStorage.setItem('mingdao-explorer-used', 'true'); } catch { /* ignore */ }
+  }, []);
+
   const [search, setSearch] = useState('');
   const [industry, setIndustry] = useState<string | null>(null);
   const [outlook, setOutlook] = useState<string | null>(null);

@@ -76,6 +76,7 @@ export function DecisionTree() {
     } else {
       setChoices(next);
       setResult(composeResult(next));
+      try { localStorage.setItem('mingdao-sim-done', 'true'); } catch { /* ignore */ }
     }
   };
 

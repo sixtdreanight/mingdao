@@ -19,6 +19,16 @@ const MODES: { id: CompareMode; label: string }[] = [
 export function SalaryCompare() {
   const [mode, setMode] = useState<CompareMode>('salary');
 
+  // Track compare views for achievements
+  useEffect(() => {
+    try {
+      const existing: string[] = JSON.parse(localStorage.getItem('mingdao-compare-views') || '[]');
+      if (!existing.includes(mode)) {
+        localStorage.setItem('mingdao-compare-views', JSON.stringify([...existing, mode]));
+      }
+    } catch { /* ignore */ }
+  }, [mode]);
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* 模式切换 */}

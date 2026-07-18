@@ -111,6 +111,8 @@ export function ProfileDashboard() {
         });
         setShowCompetency(true);
         addActivity({ type: 'competency', title: `生成能力画像: ${occupation}` });
+        const count = parseInt(localStorage.getItem('mingdao-competency-count') || '0', 10) + 1;
+        localStorage.setItem('mingdao-competency-count', String(count));
         toast('success', '能力画像已生成');
       } else {
         toast('error', json.error || '生成失败，请稍后重试');
@@ -143,6 +145,8 @@ export function ProfileDashboard() {
             };
             setProfile(updated);
             localStorage.setItem('mingdao-profile', JSON.stringify(updated));
+            localStorage.setItem('mingdao-personality-result', 'true');
+            window.dispatchEvent(new Event('profile-updated'));
             addActivity({ type: 'profile_update', title: '完成职业兴趣测评' });
             setActiveTest(null);
             toast('success', '兴趣测评结果已保存');
@@ -156,6 +160,8 @@ export function ProfileDashboard() {
             const updated = { ...profile, lifestyle: [...new Set([...(profile.lifestyle || []), `BigFive:${desc}`])] };
             setProfile(updated);
             localStorage.setItem('mingdao-profile', JSON.stringify(updated));
+            localStorage.setItem('mingdao-personality-result', 'true');
+            window.dispatchEvent(new Event('profile-updated'));
             addActivity({ type: 'profile_update', title: '完成大五人格测评' });
             setActiveTest(null);
             toast('success', '性格测评结果已保存');
