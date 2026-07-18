@@ -53,6 +53,11 @@ export function ParticleCanvas({ mode, duration = 2000, onComplete }: ParticleCa
   const particlesRef = useRef<Particle[]>([]);
   const animRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const count = mode === 'smoke' ? 12 : mode === 'gold-spark' ? 25 : 50;
 
@@ -61,7 +66,7 @@ export function ParticleCanvas({ mode, duration = 2000, onComplete }: ParticleCa
     const elapsed = timestamp - startTimeRef.current;
     if (elapsed > duration) {
       cancelAnimationFrame(animRef.current);
-      onComplete?.();
+      onCompleteRef.current?.();
       return;
     }
 
@@ -111,7 +116,7 @@ export function ParticleCanvas({ mode, duration = 2000, onComplete }: ParticleCa
     }
 
     animRef.current = requestAnimationFrame(animate);
-  }, [duration, mode, onComplete]);
+  }, [duration, mode]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
