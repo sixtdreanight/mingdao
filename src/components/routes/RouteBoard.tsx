@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Trophy, Map, Calendar, BarChart3, Share2 } from 'lucide-react';
-import type { AppContext } from '@/lib/achievement-store';
+import type { AchievementDef, AppContext } from '@/lib/achievement-store';
 import { collectContext, checkAndUnlock } from '@/lib/achievement-store';
 import { recordVisit, getStreak } from '@/lib/streak-store';
 import { getActivities } from '@/lib/activity-store';
 import { AchievementWall } from './AchievementWall';
+import { RouteDashboard } from './RouteDashboard';
+import { BadgeUnlockOverlay } from '@/components/ui/badge-unlock';
 import { cn } from '@/lib/utils';
 
 type SubView = 'badges' | 'routes' | 'calendar' | 'stats' | 'share';
@@ -121,7 +123,7 @@ export function RouteBoard() {
           <AchievementWall context={appContext} />
         )}
         {activeView === 'routes' && (
-          <PlaceholderView title="路线看板" desc="重构中..." />
+          <RouteDashboard />
         )}
         {activeView === 'calendar' && (
           <PlaceholderView title="打卡日历" desc="即将上线" />
@@ -133,6 +135,8 @@ export function RouteBoard() {
           <PlaceholderView title="分享卡片" desc="即将上线" />
         )}
       </div>
+
+      <BadgeUnlockHost />
     </div>
   );
 }
@@ -162,7 +166,7 @@ function getCompareViews(): string[] {
 }
 
 function isPersonalityDone(): boolean {
-  try { return JSON.parse(localStorage.getItem('mingdao-personality-result') || 'false') !== false; }
+  try { return localStorage.getItem('mingdao-bigfive') !== null || localStorage.getItem('mingdao-personality-result') !== null; }
   catch { return false; }
 }
 
@@ -179,4 +183,22 @@ function isExplorerUsed(): boolean {
 function isSimDone(): boolean {
   try { return localStorage.getItem('mingdao-sim-done') === 'true'; }
   catch { return false; }
+}
+
+/** 监听成就解锁事件，弹出庆祝弹窗（队列逐个展示） */
+function BadgeUnlockHost() {
+  const [queue, setQueue] = useState<AchievementDef[]>([]);
+  useEffect(() => {
+    const onUnlock = (e: Event) => {
+      const detail = (e as CustomEvent<AchievementDef[]>).detail;
+      if (Array.isArray(detail) && detail.length > 0) {
+        setQueue(prev => [...prev, ...detail]);
+      }
+    };
+    window.addEventListener('badges-unlocked', onUnlock);
+    return () => window.removeEventListener('badges-unlocked', onUnlock);
+  }, []);
+  const current = queue[0];
+  if (!current) return null;
+  return <BadgeUnlockOverlay badge={current} onClose={() => setQueue(prev => prev.slice(1))} />;
 }

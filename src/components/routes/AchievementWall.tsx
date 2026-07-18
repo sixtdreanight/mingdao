@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Trophy } from 'lucide-react';
-import type { AchievementDef, AppContext } from '@/lib/achievement-store';
+import type { AppContext } from '@/lib/achievement-store';
 import { ACHIEVEMENTS, getAchievements } from '@/lib/achievement-store';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +23,7 @@ interface AchievementWallProps {
 
 export function AchievementWall({ context }: AchievementWallProps) {
   const [category, setCategory] = useState<Category>('all');
-  const unlockedIds = useMemo(() => new Set(getAchievements().map(a => a.id)), []);
+  const unlockedIds = useMemo(() => new Set(getAchievements().map(a => a.id)), [context]);
   const unlockedCount = unlockedIds.size;
 
   const filtered = useMemo(() => {
