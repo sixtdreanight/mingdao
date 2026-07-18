@@ -8,6 +8,7 @@ import { recordVisit, getStreak } from '@/lib/streak-store';
 import { getActivities } from '@/lib/activity-store';
 import { AchievementWall } from './AchievementWall';
 import { RouteDashboard } from './RouteDashboard';
+import { StreakCalendar } from './StreakCalendar';
 import { BadgeUnlockOverlay } from '@/components/ui/badge-unlock';
 import { cn } from '@/lib/utils';
 
@@ -126,7 +127,7 @@ export function RouteBoard() {
           <RouteDashboard />
         )}
         {activeView === 'calendar' && (
-          <PlaceholderView title="打卡日历" desc="即将上线" />
+          <StreakCalendar />
         )}
         {activeView === 'stats' && (
           <PlaceholderView title="统计数据" desc="即将上线" />
