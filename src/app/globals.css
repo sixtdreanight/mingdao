@@ -101,3 +101,133 @@
 /* Spring scale in */
 @keyframes spring-in { 0% { transform: scale(0.9); opacity:0; } 60% { transform: scale(1.02); } 100% { transform: scale(1); opacity:1; } }
 .spring-in { animation: spring-in 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* ============================================
+   Achievement System Animations
+   ============================================ */
+
+/* Badge card entry stagger */
+@keyframes badge-enter {
+  from { opacity: 0; transform: translateY(24px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.badge-enter {
+  animation: badge-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.badge-enter-1  { animation-delay: 0.03s; }  .badge-enter-2  { animation-delay: 0.06s; }
+.badge-enter-3  { animation-delay: 0.09s; }  .badge-enter-4  { animation-delay: 0.12s; }
+.badge-enter-5  { animation-delay: 0.15s; }  .badge-enter-6  { animation-delay: 0.18s; }
+.badge-enter-7  { animation-delay: 0.21s; }  .badge-enter-8  { animation-delay: 0.24s; }
+.badge-enter-9  { animation-delay: 0.27s; }  .badge-enter-10 { animation-delay: 0.30s; }
+.badge-enter-11 { animation-delay: 0.33s; }  .badge-enter-12 { animation-delay: 0.36s; }
+.badge-enter-13 { animation-delay: 0.39s; }  .badge-enter-14 { animation-delay: 0.42s; }
+.badge-enter-15 { animation-delay: 0.45s; }  .badge-enter-16 { animation-delay: 0.48s; }
+.badge-enter-17 { animation-delay: 0.51s; }  .badge-enter-18 { animation-delay: 0.54s; }
+.badge-enter-19 { animation-delay: 0.57s; }  .badge-enter-20 { animation-delay: 0.60s; }
+
+/* Badge unlock: grayscale -> color */
+@keyframes badge-colorize {
+  from { filter: grayscale(1) blur(4px); transform: scale(0.8); }
+  60%  { filter: grayscale(0) blur(0); transform: scale(1.08); }
+  to   { filter: grayscale(0) blur(0); transform: scale(1); }
+}
+.badge-unlocking {
+  animation: badge-colorize 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Golden glow pulse */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45); }
+  50%      { box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.12); }
+}
+.glow-pulse {
+  animation: glow-pulse 1.5s ease-in-out infinite;
+}
+
+/* Progress bar shimmer */
+@keyframes progress-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.progress-shimmer {
+  background: linear-gradient(90deg, #c96442 0%, #f5a623 50%, #c96442 100%);
+  background-size: 200% 100%;
+  animation: progress-shimmer 2s ease-in-out infinite;
+}
+
+/* Badge hover lift */
+.badge-hover {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease;
+}
+.badge-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(201, 100, 66, 0.18);
+}
+
+/* Node completion ripple */
+@keyframes ripple-out {
+  from { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  to   { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+}
+.ripple-out {
+  animation: ripple-out 0.6s ease-out;
+}
+
+/* Flowing particle on connection line */
+@keyframes flow-particle {
+  0%   { offset-distance: 0%; opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0.3; }
+}
+.flow-dot {
+  animation: flow-particle 2s linear infinite;
+}
+
+/* Float-up + fade-in */
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.float-up {
+  animation: float-up 0.35s ease-out both;
+}
+
+/* Number flip -- for stat counters */
+@keyframes count-flip {
+  0%   { transform: translateY(0.6em); opacity: 0; filter: blur(2px); }
+  100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+.count-flip {
+  display: inline-block;
+  animation: count-flip 0.4s ease-out both;
+}
+
+/* Streak heatmap cell entry */
+@keyframes heat-in {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.heat-in {
+  animation: heat-in 0.25s ease-out both;
+}
+
+/* Share card 3D tilt on hover */
+.share-card-3d {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  perspective: 1000px;
+}
+.share-card-3d:hover {
+  transform: rotateY(-2deg) rotateX(1deg) scale(1.02);
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
+}
+
+/* Reduced motion: disable all new animations */
+@media (prefers-reduced-motion: reduce) {
+  .badge-enter, .badge-unlocking, .glow-pulse, .progress-shimmer,
+  .badge-hover, .ripple-out, .flow-dot, .float-up, .count-flip,
+  .heat-in, .share-card-3d {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
