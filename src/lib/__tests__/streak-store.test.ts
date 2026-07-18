@@ -39,6 +39,22 @@ describe('streak-store', () => {
       const today = formatDateKey(new Date());
       expect(history.filter(d => d === today)).toHaveLength(1);
     });
+
+    it('heals corrupted storage and records today', () => {
+      store.set('mingdao-streak', JSON.stringify({ not: 'an array' }));
+      recordVisit();
+      const history = getStreakHistory();
+      expect(history).toContain(formatDateKey(new Date()));
+      expect(getStreak()).toBe(1);
+    });
+
+    it('filters non-string entries when recording', () => {
+      store.set('mingdao-streak', JSON.stringify([123, null, formatDateKey(new Date(Date.now() - 86400000))]));
+      recordVisit();
+      const history = getStreakHistory();
+      expect(history.every(d => typeof d === 'string')).toBe(true);
+      expect(getStreak()).toBe(2); // yesterday + today
+    });
   });
 
   describe('getStreak', () => {

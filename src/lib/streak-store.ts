@@ -22,19 +22,17 @@ export function recordVisit(): void {
   const today = formatDateKey(new Date());
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    let dates: string[] = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(dates)) {
-      dates = [today];
-    }
-    dates = dates.filter((d): d is string => typeof d === 'string');
-    if (!dates.includes(today)) {
-      const next = [...dates, today];
-      // 保留过去 365 天
-      const cutoff = formatDateKey(new Date(Date.now() - 365 * 86400000));
-      const filtered = next.filter(d => d >= cutoff).sort();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-    }
-  } catch { /* ignore */ }
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    const valid = Array.isArray(parsed) ? parsed.filter((d): d is string => typeof d === 'string') : [];
+    if (valid.includes(today)) return;
+    // 保留过去 365 天
+    const cutoff = formatDateKey(new Date(Date.now() - 365 * 86400000));
+    const next = [...valid, today].filter(d => d >= cutoff).sort();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // JSON 解析失败 → 重置为仅今天
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify([today])); } catch { /* ignore */ }
+  }
 }
 
 /**
@@ -56,7 +54,8 @@ export function getStreak(): number {
     if (sorted[0] !== today && sorted[0] !== yesterday) return 0;
 
     let streak = 1;
-    const startDate = new Date(sorted[0]);
+    const [y, m, day] = sorted[0].split('-').map(Number);
+    const startDate = new Date(y, m - 1, day);
     for (let i = 1; i < sorted.length; i++) {
       const prev = new Date(startDate);
       prev.setDate(prev.getDate() - i);
