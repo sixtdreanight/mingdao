@@ -7,6 +7,7 @@ import { collectContext, checkAndUnlock } from '@/lib/achievement-store';
 import { recordVisit, getStreak } from '@/lib/streak-store';
 import { getActivities } from '@/lib/activity-store';
 import { AchievementWall } from './AchievementWall';
+import { ShareCard } from './ShareCard';
 import { RouteDashboard } from './RouteDashboard';
 import { StreakCalendar } from './StreakCalendar';
 import { StatsPanel } from './StatsPanel';
@@ -134,7 +135,7 @@ export function RouteBoard() {
           <StatsPanel />
         )}
         {activeView === 'share' && (
-          <PlaceholderView title="分享卡片" desc="即将上线" />
+          <ShareCard />
         )}
       </div>
 
