@@ -2,13 +2,14 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Sparkles, UserCircle, Database, Library, ChevronLeft, ChevronRight, History, User, Map, BarChart3, GitBranch, Compass } from 'lucide-react';
+import { Sparkles, UserCircle, Database, Library, ChevronLeft, ChevronRight, History, User, Map, BarChart3, GitBranch, Compass, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { id: 'coach',     icon: Sparkles,    label: 'AI规划师', en: 'Coach' },
   { id: 'profile',   icon: UserCircle,  label: '个人画像', en: 'Profile' },
   { id: 'routes',    icon: Map,         label: '成就图鉴', en: 'Routes' },
+  { id: 'journal',   icon: BookOpen,    label: '决策日志', en: 'Journal' },
   { id: 'explore',   icon: BarChart3,   label: '数据对比', en: 'Compare' },
   { id: 'sim',       icon: GitBranch,   label: '路径模拟', en: 'Simulate' },
   { id: 'careers',   icon: Compass,     label: '职业探索', en: 'Careers' },
@@ -59,7 +60,7 @@ export function AppSidebar({ onOpenHistory }: { onOpenHistory: () => void }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-0.5 px-3 py-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
         {NAV_ITEMS.map((item) => {
           const isActive = activeTab === item.id;
           return (

@@ -40,17 +40,72 @@ const SYSTEM_PROMPT = `你是一位职业能力分析师。你的任务是为给
 
 只输出 JSON，不要任何解释文字。`;
 
-/** 解析 AI 返回的 JSON，容错处理 */
+/** 解析 AI 返回的 JSON，容错处理 + 运行时结构校验 */
 function parseCompetencyJSON(raw: string): OccupationCompetencyProfile {
+  let parsed: unknown;
   try {
-    return JSON.parse(raw) as OccupationCompetencyProfile;
+    parsed = JSON.parse(raw);
   } catch {
-    const jsonMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[1]) as OccupationCompetencyProfile;
+    // 尝试从代码块中提取
+    const fenceMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+    if (fenceMatch) {
+      try { parsed = JSON.parse(fenceMatch[1]); } catch { /* fall through */ }
     }
-    throw new Error(`Failed to parse competency JSON from AI response`);
+    // 尝试提取第一个 {...} 块
+    if (parsed === undefined) {
+      const braceMatch = raw.match(/\{[\s\S]*\}/);
+      if (braceMatch) {
+        try { parsed = JSON.parse(braceMatch[0]); } catch { /* fall through */ }
+      }
+    }
+    if (parsed === undefined) {
+      throw new Error('Failed to parse competency JSON from AI response');
+    }
   }
+  return validateProfile(parsed);
+}
+
+const VALID_LAYERS = new Set(['skill', 'knowledge', 'cert', 'self_concept', 'trait', 'motive']);
+const VALID_TYPES = new Set(['professional', 'transferable', 'digital', 'career_dev', 'emotional', 'self_efficacy']);
+
+/** 运行时结构校验 — 畸形 AI 输出在这里拦截，不进入客户端持久化 */
+function validateProfile(v: unknown): OccupationCompetencyProfile {
+  if (!v || typeof v !== 'object') throw new Error('Competency profile is not an object');
+  const o = v as Record<string, unknown>;
+  if (typeof o.occupation !== 'string' || o.occupation.length === 0) {
+    throw new Error('Competency profile missing occupation');
+  }
+  if (!Array.isArray(o.competencies)) throw new Error('Competency profile missing competencies array');
+
+  const competencies = (o.competencies as unknown[]).filter((c): c is Record<string, unknown> => {
+    if (!c || typeof c !== 'object') return false;
+    const comp = c as Record<string, unknown>;
+    // Verify proficiencyLevels has all 5 keys with non-empty strings
+    const validLevels =
+      comp.proficiencyLevels !== null && typeof comp.proficiencyLevels === 'object' &&
+      [1, 2, 3, 4, 5].every(k =>
+        typeof (comp.proficiencyLevels as Record<number, unknown>)[k] === 'string' &&
+        (comp.proficiencyLevels as Record<number, unknown>)[k] !== ''
+      );
+    return (
+      typeof comp.id === 'string' &&
+      typeof comp.name === 'string' &&
+      typeof comp.layer === 'string' && VALID_LAYERS.has(comp.layer) &&
+      typeof comp.type === 'string' && VALID_TYPES.has(comp.type) &&
+      validLevels &&
+      typeof comp.weightInOccupation === 'number'
+    );
+  });
+
+  if (competencies.length === 0) throw new Error('AI generated no valid competencies');
+
+  return {
+    occupation: o.occupation,
+    competencies: competencies as unknown as OccupationCompetencyProfile['competencies'],
+    generatedBy: 'ai',
+    trustLevel: 'ai-inferred',
+    generatedAt: new Date().toISOString(),
+  };
 }
 
 /** 为指定职业生成能力画像 */
@@ -68,17 +123,7 @@ export async function generateCompetencyProfile(
 
   if (!text) throw new Error('AI returned no text content');
 
-  const profile = parseCompetencyJSON(text);
-
-  profile.generatedBy = 'ai';
-  profile.trustLevel = 'ai-inferred';
-  profile.generatedAt = new Date().toISOString();
-
-  if (!profile.competencies || profile.competencies.length === 0) {
-    throw new Error('AI generated empty competency list');
-  }
-
-  return profile;
+  return parseCompetencyJSON(text);
 }
 
 export { SYSTEM_PROMPT as COMPETENCY_SYSTEM_PROMPT };

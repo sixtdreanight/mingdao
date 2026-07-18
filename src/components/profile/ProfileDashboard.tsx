@@ -9,7 +9,32 @@ import { CareerTest } from './CareerTest';
 import { PersonalityTest } from './PersonalityTest';
 import { toast } from '@/components/ui/toast';
 import { addActivity, getStats } from '@/lib/activity-store';
-import { Beaker, Brain } from 'lucide-react';
+import { Beaker, Brain, Download } from 'lucide-react';
+
+/** 导出用户全部本地数据为 JSON 文件（数据主权归用户） */
+function exportAllData(): void {
+  try {
+    const KEYS = [
+      'mingdao-profile', 'mingdao-messages', 'mingdao-competency', 'mingdao-routes',
+      'mingdao-decisions', 'mingdao-activity', 'mingdao-bookmarks',
+      'mingdao-resource-bookmarks', 'mingdao-bigfive', 'mingdao-test-result',
+    ];
+    const data: Record<string, unknown> = { exportedAt: new Date().toISOString(), app: 'mingdao' };
+    for (const k of KEYS) {
+      const raw = localStorage.getItem(k);
+      if (raw) { try { data[k] = JSON.parse(raw); } catch { data[k] = raw; } }
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mingdao-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    toast('error', '导出失败');
+  }
+}
 
 type TestType = 'career' | 'bigfive' | null;
 
@@ -98,7 +123,14 @@ export function ProfileDashboard() {
 
   return (
     <div className="flex h-full flex-col overflow-y-auto p-6">
-      <h2 className="mb-6 text-lg font-semibold tracking-tight text-foreground">个人画像</h2>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">个人画像</h2>
+        <button onClick={exportAllData}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          title="导出画像、对话、路线、决策日志等全部本地数据">
+          <Download className="h-3.5 w-3.5" /> 导出我的数据
+        </button>
+      </div>
 
       {/* 测评工具 */}
       {activeTest === 'career' && (

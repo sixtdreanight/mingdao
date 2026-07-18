@@ -9,13 +9,14 @@ import { KnowledgeBrowser } from '@/components/knowledge/KnowledgeBrowser';
 import { SalaryCompare } from '@/components/explore/SalaryCompare';
 import { DecisionTree } from '@/components/explore/DecisionTree';
 import { CareerExplorer } from '@/components/explore/CareerExplorer';
+import { DecisionJournal } from '@/components/decisions/DecisionJournal';
 
 /**
  * 所有模块同时挂载，通过 display 切换，避免切换时丢失状态。
  */
 export function ContentRouter() {
   const params = useSearchParams();
-  const VALID_TABS = new Set(['coach', 'profile', 'knowledge', 'resources', 'routes', 'explore', 'sim', 'careers']);
+  const VALID_TABS = new Set(['coach', 'profile', 'knowledge', 'resources', 'routes', 'journal', 'explore', 'sim', 'careers']);
   const raw = params.get('tab') || 'coach';
   const tab = VALID_TABS.has(raw) ? raw : 'coach';
 
@@ -35,6 +36,9 @@ export function ContentRouter() {
       </div>
       <div className={tab === 'routes' ? 'h-full overflow-auto' : 'hidden'}>
         <RouteBoard />
+      </div>
+      <div className={tab === 'journal' ? 'h-full' : 'hidden'}>
+        <DecisionJournal />
       </div>
       <div className={tab === 'explore' ? 'h-full' : 'hidden'}>
         <SalaryCompare />

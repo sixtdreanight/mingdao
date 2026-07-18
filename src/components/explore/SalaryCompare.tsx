@@ -1,12 +1,52 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { MapPin, ArrowUp, ArrowDown, Info, AlertTriangle, RotateCcw } from 'lucide-react';
+import { MapPin, ArrowUp, ArrowDown, Info } from 'lucide-react';
 import { loadAllData, getSalaryRanking, getCityCosts, getNationalAvg, hasLoadError } from '@/lib/data-store';
+import { PurchasingView } from './PurchasingView';
+import { IndustryCompare } from './IndustryCompare';
 
 const MAJOR_COLORS = ['#10b981','#f59e0b','#3b82f6','#8b5cf6','#ef4444','#06b6d4','#f97316','#6366f1','#14b8a6','#ec4899','#84cc16','#0ea5e9'];
 
+type CompareMode = 'salary' | 'purchasing' | 'industry';
+
+const MODES: { id: CompareMode; label: string }[] = [
+  { id: 'salary', label: '专业薪资' },
+  { id: 'purchasing', label: '城市购买力' },
+  { id: 'industry', label: '行业体制对比' },
+];
+
 export function SalaryCompare() {
+  const [mode, setMode] = useState<CompareMode>('salary');
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* 模式切换 */}
+      <div className="shrink-0 border-b border-border/30 bg-background/60 px-6 pt-4 pb-0">
+        <div className="mx-auto max-w-3xl flex gap-1">
+          {MODES.map(m => (
+            <button key={m.id} onClick={() => setMode(m.id)}
+              aria-pressed={mode === m.id}
+              className={`rounded-t-lg px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                mode === m.id
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}>
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex-1 overflow-hidden">
+        {mode === 'salary' && <MajorSalaryView />}
+        {mode === 'purchasing' && <PurchasingView />}
+        {mode === 'industry' && <IndustryCompare />}
+      </div>
+    </div>
+  );
+}
+
+function MajorSalaryView() {
   const [majors, setMajors] = useState<{ name: string; salary: number; field: string }[]>([]);
   const [cities, setCities] = useState<{ name: string; monthly: number }[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -14,7 +54,6 @@ export function SalaryCompare() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [avg, setAvg] = useState(6435);
-  const [mode, setMode] = useState<'salary' | 'purchasing'>('salary');
 
   const load = () => {
     setLoading(true); setError(false);
@@ -42,8 +81,15 @@ export function SalaryCompare() {
   const list = useMemo(() => majors.filter(m => selected.has(m.name)).sort((a,b) => b.salary - a.salary), [majors, selected]);
   const maxVal = Math.max(...list.map(m => m.salary), 1);
   const cityData = cities.find(c => c.name === selCity) || cities[0];
+  const cityMonthlyIncome = cityData?.monthly || 6000;
 
   if (loading) return <div className="flex items-center justify-center h-full"><div className="skeleton h-64 w-full max-w-2xl rounded-2xl" /></div>;
+  if (error) return (
+    <div className="flex flex-col items-center justify-center h-full gap-3">
+      <p className="text-sm text-muted-foreground">数据加载失败</p>
+      <button onClick={load} className="text-xs text-primary hover:underline">重试</button>
+    </div>
+  );
 
   return (
     <div className="h-full overflow-y-auto">
@@ -55,6 +101,7 @@ export function SalaryCompare() {
           <span className="text-xs text-muted-foreground mr-1"><MapPin className="inline h-3.5 w-3.5"/> 参照城市：</span>
           {cities.slice(0, 10).map(c => (
             <button key={c.name} onClick={() => setSelCity(c.name)}
+              aria-pressed={c.name === selCity}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${c.name === selCity ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
               {c.name} ¥{c.monthly.toLocaleString()}
             </button>
@@ -74,13 +121,14 @@ export function SalaryCompare() {
           ))}
           <div className="relative mt-3 pt-2 border-t border-dashed border-border/40">
             <div className="flex items-center gap-2">
-              <span className="w-36 text-right text-[10px] text-muted-foreground/50">{selCity} 均薪</span>
-              <div className="flex-1 relative">
-                <div className="absolute top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-foreground/30" style={{ left: `${((cityData?.monthly||6000)/maxVal)*100}%` }} />
+              <span className="w-36 text-right text-[10px] text-muted-foreground/50">{selCity} 人均可支配收入(月)</span>
+              <div className="flex-1 relative overflow-hidden">
+                <div className="absolute top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-foreground/30" style={{ left: `${Math.min(100, (cityMonthlyIncome/maxVal)*100)}%` }} />
               </div>
-              <span className="w-16 text-[11px] font-semibold">¥{(cityData?.monthly||6000).toLocaleString()}</span>
+              <span className="w-16 text-[11px] font-semibold">¥{cityMonthlyIncome.toLocaleString()}</span>
               <span className="w-12" />
             </div>
+            <p className="mt-1 text-right text-[10px] text-muted-foreground/40">城市线为年人均可支配收入÷12（国家统计局口径），非平均工资</p>
           </div>
         </div>
 
@@ -92,6 +140,7 @@ export function SalaryCompare() {
           <div className="flex flex-wrap gap-1.5">
             {majors.map(m => (
               <button key={m.name} onClick={() => toggle(m.name)}
+                aria-pressed={selected.has(m.name)}
                 className={`rounded-lg px-3 py-1.5 text-xs transition-all ${selected.has(m.name) ? 'bg-foreground text-background shadow-sm' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
                 {m.name} {m.salary > avg ? '↑' : '↓'}
               </button>

@@ -145,6 +145,15 @@ export function CareerExplorer() {
                 className={`rounded-full px-3 py-1.5 text-xs transition-colors ${i === industry ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>{i}</button>
             ))}
           </div>
+          <div className="flex gap-1.5 flex-wrap mt-1">
+            <span className="text-[11px] text-muted-foreground/50 self-center mr-1">前景</span>
+            {(['rising', 'stable', 'declining'] as const).map(o => (
+              <button key={o} onClick={() => setOutlook(outlook === o ? null : o)}
+                className={`rounded-full px-2.5 py-1 text-xs transition-colors ${outlook === o ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                {{rising:'📈 上升',stable:'➡️ 稳定',declining:'📉 下降'}[o]}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Results */}

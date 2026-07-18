@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, ArrowUpDown, Bookmark, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ArrowUpDown, Bookmark, ExternalLink, ChevronLeft, ChevronRight, Calculator } from 'lucide-react';
 import { loadAllData, getSalaryRanking, getNationalAvg, hasLoadError } from '@/lib/data-store';
+import { estimateNetSalary, ASSUMPTIONS_NOTE } from '@/lib/salary-calc';
 
 interface Row { name: string; salary: number; field: string; id: string }
 const PAGE_SIZE = 50;
@@ -18,6 +19,7 @@ export function KnowledgeBrowser() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [avg, setAvg] = useState(6435);
+  const [showNet, setShowNet] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,12 +68,17 @@ export function KnowledgeBrowser() {
             <p className="text-xs text-muted-foreground">{filtered.length} 个专业 · {allFields.length} 个学科 · 数据来源麦可思</p>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={()=>setShowNet(v=>!v)}
+              aria-pressed={showNet}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium inline-flex items-center gap-1 transition-colors ${showNet?'bg-primary text-primary-foreground':'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+              <Calculator className="h-3 w-3"/> 到手估算
+            </button>
             <button onClick={()=>setSortDir(d=>d==='asc'?'desc':'asc')} className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
               <ArrowUpDown className="h-3 w-3"/> {sortDir==='desc'?'高→低':'低→高'}
             </button>
             <div className="flex items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-1.5">
               <Search className="h-3.5 w-3.5 text-muted-foreground/40"/>
-              <input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="搜索" className="w-36 bg-transparent text-xs outline-none"/>
+              <input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="搜索" aria-label="搜索专业" className="w-36 bg-transparent text-xs outline-none"/>
             </div>
           </div>
         </div>
@@ -86,7 +93,7 @@ export function KnowledgeBrowser() {
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-border/20 bg-card overflow-hidden">
+        <div className="rounded-xl border border-border/20 bg-card overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-secondary/30">
               <tr className="border-b border-border/20">
@@ -94,6 +101,7 @@ export function KnowledgeBrowser() {
                 <th className="px-3 py-2.5 text-left text-[11px] font-medium text-muted-foreground">专业名称</th>
                 <th className="px-3 py-2.5 text-left text-[11px] font-medium text-muted-foreground hidden md:table-cell">学科门类</th>
                 <th className="px-3 py-2.5 text-right text-[11px] font-medium text-muted-foreground">月薪</th>
+                {showNet && <th className="px-3 py-2.5 text-right text-[11px] font-medium text-muted-foreground">到手估算</th>}
                 <th className="px-3 py-2.5 text-center text-[11px] font-medium text-muted-foreground w-10">收藏</th>
               </tr>
             </thead>
@@ -106,6 +114,16 @@ export function KnowledgeBrowser() {
                   <td className="px-3 py-2 text-right font-semibold tabular-nums text-[13px]">
                     <span className={r.salary >= avg ? 'text-emerald-600' : 'text-foreground'}>¥{r.salary.toLocaleString()}</span>
                   </td>
+                  {showNet && <td className="px-3 py-2 text-right tabular-nums text-[13px]">
+                    {(() => {
+                      const b = estimateNetSalary(r.salary);
+                      return (
+                        <span className="text-muted-foreground" title={`五险一金 ¥${b.socialTotal.toLocaleString()} + 个税 ¥${b.monthlyTax.toLocaleString()}`}>
+                          ¥{b.net.toLocaleString()}
+                        </span>
+                      );
+                    })()}
+                  </td>}
                   <td className="px-3 py-2 text-center">
                     <button onClick={()=>toggleBm(r.id)} className={bookmarks.has(r.id)?'text-amber-500':'text-muted-foreground/20 hover:text-amber-400'}>
                       <Bookmark className={`h-3.5 w-3.5 ${bookmarks.has(r.id)?'fill-amber-400':''}`}/>
@@ -126,9 +144,16 @@ export function KnowledgeBrowser() {
           </div>
         )}
 
-        <p className="mt-6 text-center text-[10px] text-muted-foreground/40">
-          数据来源：麦可思研究院《2026年中国本科生就业报告》、国家统计局 · <a href="https://finance.eastmoney.com/a/202607163809142791.html" target="_blank" rel="noopener noreferrer" className="hover:text-primary inline-flex items-center gap-0.5">查看原始报告<ExternalLink className="h-2.5 w-2.5"/></a>
-        </p>
+        <div className="mt-6 space-y-1 text-center">
+          {showNet && (
+            <p className="text-[10px] text-muted-foreground/40">
+              {ASSUMPTIONS_NOTE}
+            </p>
+          )}
+          <p className="text-[10px] text-muted-foreground/40">
+            数据来源：麦可思研究院《2026年中国本科生就业报告》、国家统计局 · <a href="https://finance.eastmoney.com/a/202607163809142791.html" target="_blank" rel="noopener noreferrer" className="hover:text-primary inline-flex items-center gap-0.5">查看原始报告<ExternalLink className="h-2.5 w-2.5"/></a>
+          </p>
+        </div>
       </div>
     </div>
   );

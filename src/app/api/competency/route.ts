@@ -16,6 +16,12 @@ export async function POST(
         { status: 400 }
       );
     }
+    if (occupation.length > 50) {
+      return NextResponse.json(
+        { success: false, error: '职业名称过长' },
+        { status: 400 }
+      );
+    }
 
     const profile = await generateCompetencyProfile(occupation.trim());
 

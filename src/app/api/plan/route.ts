@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const profile: Partial<UserProfile> = body.profile;
 
-    if (!profile) {
+    if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
       return NextResponse.json({ success: false, error: '请提供用户画像' }, { status: 400 });
     }
 

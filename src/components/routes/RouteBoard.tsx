@@ -82,10 +82,21 @@ function RouteChain({ route, onUpdate }: { route: Route & { status: string }; on
       <div className="flex gap-2">
         <button
           onClick={() => {
-            const reason = window.prompt('为什么要放弃这条路？（可选）');
+            const reason = window.prompt('为什么要放弃这条路？记下理由，日后回看（可选）');
             abandonRoute(route.id);
-            if (reason) {
-              addActivity({ type: 'profile_update', title: `放弃路线: ${route.title}`, detail: reason });
+            if (reason && reason.trim()) {
+              // 写入决策日志：放弃理由是最宝贵的决策数据
+              import('@/lib/decision-store').then(({ addDecision, addSnapshot, settleDecision }) => {
+                const entry = addDecision(`是否继续「${route.title}」这条路线`, [
+                  { label: '继续', pros: '', cons: '' },
+                  { label: '放弃', pros: '', cons: '' },
+                ]);
+                addSnapshot(entry.id, { leaning: '放弃', confidence: 80, reasoning: reason.trim(), missingInfo: '' });
+                settleDecision(entry.id, '放弃');
+              }).catch(() => {
+                // 模块加载失败时静默降级，理由已通过 addActivity 记录
+              });
+              addActivity({ type: 'profile_update', title: `放弃路线: ${route.title}`, detail: reason.trim() });
             }
             onUpdate();
           }}

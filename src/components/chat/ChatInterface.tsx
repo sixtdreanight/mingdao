@@ -5,6 +5,7 @@ import { MessageBubble } from './MessageBubble';
 import { extractProfile } from '@/lib/profile-extractor';
 import { addActivity } from '@/lib/activity-store';
 import { hasRoutes as clientHasRoutes } from '@/lib/route-store';
+import { parseSourcesLine, stripDoneMarker } from '@/lib/stream-protocol';
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: 'assistant', timestamp: new Date().toISOString(),
@@ -78,41 +79,34 @@ export function ChatInterface() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let sources: ChatMessage['sources'] = [];
-      let buffer = '';
+      let pending = '';          // 等待 sources 首行完整到达的缓冲
+      let sourcesParsed = false;
+      let raw = '';              // sources 行之后的全部正文（可含换行）
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-
-        // 逐行解析，处理 sources JSON 行
-        while (buffer.includes('\n')) {
-          const nl = buffer.indexOf('\n');
-          let line = buffer.slice(0, nl);
-          buffer = buffer.slice(nl + 1);
-
-          // 尝试解析 sources 元数据行
-          if (line.startsWith('{"type":"sources"')) {
-            try {
-              const meta = JSON.parse(line.trim());
-              sources = meta.sources || [];
-              if (meta.profile && Object.keys(meta.profile).length > 0) {
-                setProfile(prev => mergeProfile(prev, meta.profile));
-              }
-            } catch { /* skip malformed line */ }
-            continue;
+        const text = decoder.decode(value, { stream: true });
+        if (!sourcesParsed) {
+          pending += text;
+          const parsed = parseSourcesLine(pending);
+          if (!parsed.complete) continue; // 首行未完整，继续等待
+          if (parsed.meta) {
+            sources = (parsed.meta.sources || []) as ChatMessage['sources'];
+            const p = parsed.meta.profile;
+            if (p && Object.keys(p).length > 0) {
+              setProfile(prev => mergeProfile(prev, p as Partial<UserProfile>));
+            }
           }
-
-          // [DONE] 标记
-          if (line.trim() === '[DONE]') break;
-
-          // 普通内容
-          streamingRef.current += line;
-          if (buffer.includes('\n')) streamingRef.current += '\n';
+          raw = parsed.rest;
+          sourcesParsed = true;
+          pending = '';
+        } else {
+          raw += text;
         }
 
-        // 更新消息
+        streamingRef.current = stripDoneMarker(raw, false);
         setMessages(prev => {
           const updated = [...prev];
           const lastIdx = updated.length - 1;
@@ -123,8 +117,10 @@ export function ChatInterface() {
         });
       }
 
-      // 最终状态
-      const finalContent = streamingRef.current + buffer.replace(/^\[DONE\]\s*$/, '');
+      // 最终状态（flush 解码器 + 未收到换行时 pending 也是正文）
+      raw += decoder.decode();
+      if (!sourcesParsed) raw = pending;
+      const finalContent = stripDoneMarker(raw, true);
       const finalMessages = [...newMessages, {
         role: 'assistant' as const,
         content: finalContent || '收到你的消息，但我暂时无法给出完整的回复。请重试。',
