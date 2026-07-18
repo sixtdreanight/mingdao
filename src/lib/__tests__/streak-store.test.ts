@@ -20,7 +20,7 @@ describe('streak-store', () => {
 
   describe('formatDateKey', () => {
     it('returns YYYY-MM-DD format', () => {
-      const d = new Date('2026-07-18T12:00:00Z');
+      const d = new Date(2026, 6, 18);
       expect(formatDateKey(d)).toBe('2026-07-18');
     });
   });

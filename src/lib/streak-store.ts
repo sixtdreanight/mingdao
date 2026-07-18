@@ -8,7 +8,10 @@ function guard(): boolean {
 }
 
 export function formatDateKey(d: Date): string {
-  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`; // 本地时区 YYYY-MM-DD
 }
 
 /**
@@ -19,13 +22,16 @@ export function recordVisit(): void {
   const today = formatDateKey(new Date());
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    const dates: string[] = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(dates)) { localStorage.removeItem(STORAGE_KEY); return; }
+    let dates: string[] = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(dates)) {
+      dates = [today];
+    }
+    dates = dates.filter((d): d is string => typeof d === 'string');
     if (!dates.includes(today)) {
-      dates.push(today);
+      const next = [...dates, today];
       // 保留过去 365 天
       const cutoff = formatDateKey(new Date(Date.now() - 365 * 86400000));
-      const filtered = dates.filter(d => d >= cutoff).sort();
+      const filtered = next.filter(d => d >= cutoff).sort();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     }
   } catch { /* ignore */ }
@@ -41,7 +47,8 @@ export function getStreak(): number {
     const dates: string[] = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(dates) || dates.length === 0) return 0;
 
-    const sorted = [...dates].sort().reverse(); // 最新在前
+    const valid = dates.filter((d): d is string => typeof d === 'string');
+    const sorted = [...valid].sort().reverse(); // 最新在前
     const today = formatDateKey(new Date());
     const yesterday = formatDateKey(new Date(Date.now() - 86400000));
 
@@ -74,8 +81,9 @@ export function getStreakHistory(): string[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     const dates: string[] = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(dates)) return [];
+    const valid = dates.filter((d): d is string => typeof d === 'string');
     const cutoff = formatDateKey(new Date(Date.now() - 180 * 86400000));
-    return dates.filter(d => d >= cutoff).sort();
+    return valid.filter(d => d >= cutoff).sort();
   } catch {
     return [];
   }
