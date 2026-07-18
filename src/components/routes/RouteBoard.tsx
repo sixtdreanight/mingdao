@@ -9,6 +9,7 @@ import { getActivities } from '@/lib/activity-store';
 import { AchievementWall } from './AchievementWall';
 import { RouteDashboard } from './RouteDashboard';
 import { StreakCalendar } from './StreakCalendar';
+import { StatsPanel } from './StatsPanel';
 import { BadgeUnlockOverlay } from '@/components/ui/badge-unlock';
 import { cn } from '@/lib/utils';
 
@@ -130,7 +131,7 @@ export function RouteBoard() {
           <StreakCalendar />
         )}
         {activeView === 'stats' && (
-          <PlaceholderView title="统计数据" desc="即将上线" />
+          <StatsPanel />
         )}
         {activeView === 'share' && (
           <PlaceholderView title="分享卡片" desc="即将上线" />
